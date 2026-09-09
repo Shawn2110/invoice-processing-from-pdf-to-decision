@@ -1,0 +1,2328 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Docket — Evidence transcript</title>
+  <style>
+    :root {
+      --ink: #171914;
+      --paper: #ffffff;
+      --canvas: #ffffff;
+      --wash: #f3f5ef;
+      --muted: #5c6159;
+      --rule: #c9cec4;
+      --acid: #ffd166;
+      --acid-soft: #fff5d6;
+      --signal: #f06449;
+      --signal-deep: #9b2c1f;
+      --signal-soft: #fff0eb;
+      --source-two: #eef1eb;
+      --pass: #237a57;
+      --brand: #2f5bff;
+      --focus: #2f5bff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--canvas); }
+
+    body {
+      position: relative;
+      isolation: isolate;
+      min-width: 320px;
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .cut-sheet {
+      display: none;
+    }
+
+    .source-field,
+    .source-gap {
+      position: absolute;
+      border: 2px solid var(--ink);
+    }
+
+    .source-field span,
+    .source-gap span,
+    .ocr-edge span,
+    .field-state-label {
+      position: absolute;
+      padding: 5px 8px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .form-field {
+      top: 72px;
+      left: -5vw;
+      width: 57vw;
+      height: 46vh;
+      background: #e3ff8c;
+      clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+    }
+
+    .form-field span {
+      top: 18px;
+      left: calc(5vw + 10px);
+    }
+
+    .bank-field {
+      right: -5vw;
+      bottom: -7vh;
+      width: 55vw;
+      height: 58vh;
+      background: var(--source-two);
+      clip-path: polygon(16% 0, 100% 0, 100% 100%, 0 100%);
+    }
+
+    .bank-field > span {
+      right: calc(5vw + 10px);
+      bottom: calc(9vh + 16px);
+    }
+
+    .ocr-edge {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 16%;
+      width: 0;
+      border-left: 3px solid var(--ink);
+    }
+
+    .field-state-label {
+      position: fixed;
+      top: 92px;
+      right: 32px;
+      left: auto;
+    }
+
+    .ocr-state-label::after { content: " / ALIGNED"; }
+
+    .source-gap {
+      display: none;
+      right: -2px;
+      bottom: 0;
+      width: 47vw;
+      height: 58vh;
+      background: #dedbd0;
+      border-style: dashed;
+      border-width: 3px;
+    }
+
+    .source-gap-label { display: none; background: var(--signal); }
+
+    body[data-scenario="uncertain"] .ocr-edge {
+      border-left-style: dashed;
+      border-left-width: 4px;
+    }
+
+    body[data-scenario="uncertain"] .ocr-state-label::after { content: " / UNCERTAIN"; }
+
+    body[data-scenario="missing"] .bank-field { display: none; }
+
+    body[data-scenario="missing"] .ocr-state-label { display: none; }
+
+    body[data-scenario="missing"] .source-gap { display: block; }
+
+    body[data-scenario="missing"] .source-gap-label { display: block; }
+
+    body[data-scenario="resolved"] .synopsis-mark {
+      color: var(--pass);
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    button,
+    select { font: inherit; }
+
+    a { color: inherit; }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: -10000px;
+      z-index: 50;
+      padding: 10px 14px;
+      color: var(--paper);
+      background: var(--ink);
+      transition: left 120ms ease;
+    }
+
+    .skip-link:focus { left: 12px; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    :focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 4px;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      width: min(1320px, calc(100% - 64px));
+      margin: 0 auto;
+      padding: 18px 0 48px;
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 24px;
+      min-height: 44px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      color: var(--paper);
+      background: var(--brand);
+      border: 2px solid var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      transform: rotate(-3deg);
+    }
+
+    .crumb {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .crumb:hover { color: var(--ink); }
+
+    .prototype-label {
+      justify-self: end;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .prototype-label::before {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 7px;
+      background: var(--brand);
+      border: 1px solid var(--ink);
+      content: "";
+    }
+
+    .page-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 28px;
+      padding: 24px 0 14px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--signal-deep);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(35px, 4.2vw, 56px);
+      font-weight: 850;
+      letter-spacing: -.06em;
+      line-height: .92;
+    }
+
+    .case-facts {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin: 0 0 3px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .sla {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 6px 10px;
+      color: var(--ink);
+      color: var(--signal-deep);
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      border-left: 6px solid var(--signal);
+    }
+
+    .scenario-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 44px;
+      padding: 8px 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .scenario-copy {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .scenario-control {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .scenario-control label {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .scenario-control select {
+      min-height: 34px;
+      padding: 5px 34px 5px 10px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1.5px solid var(--ink);
+      border-radius: 0;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .conflict-synopsis {
+      display: grid;
+      grid-template-columns: 178px minmax(0, 1fr);
+      margin-top: 16px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+    }
+
+    .synopsis-intro {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 18px;
+      background: var(--signal-soft);
+      border-right: 1px solid var(--ink);
+      border-top: 6px solid var(--signal);
+    }
+
+    .synopsis-kicker,
+    .synopsis-state,
+    .synopsis-source,
+    .synopsis-meta { display: block; }
+
+    .synopsis-kicker,
+    .synopsis-source {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .synopsis-state {
+      color: var(--signal-deep);
+      font-size: 18px;
+      font-weight: 850;
+      letter-spacing: -.025em;
+      line-height: 1.05;
+    }
+
+    .synopsis-body { min-width: 0; }
+
+    .synopsis-values {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 52px minmax(0, 1fr);
+      min-width: 0;
+    }
+
+    .synopsis-claim {
+      min-width: 0;
+      padding: 18px 22px 16px;
+    }
+
+    .synopsis-value {
+      display: block;
+      margin-top: 8px;
+      overflow-wrap: anywhere;
+      font-size: clamp(24px, 2.5vw, 38px);
+      font-weight: 850;
+      letter-spacing: -.045em;
+      line-height: 1;
+    }
+
+    .synopsis-meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .synopsis-mark {
+      display: grid;
+      place-items: center;
+      color: var(--signal-deep);
+      background: var(--wash);
+      border-right: 1px solid var(--rule);
+      border-left: 1px solid var(--rule);
+      font-size: 28px;
+      font-weight: 900;
+    }
+
+    .synopsis-diff {
+      display: flex;
+      gap: 10px;
+      margin: 0;
+      padding: 11px 22px 12px;
+      color: var(--muted);
+      border-top: 1px solid var(--ink);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .synopsis-diff strong { color: var(--ink); }
+
+    .mobile-pin { display: none; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      align-items: stretch;
+      margin-top: 14px;
+      border: 2px solid var(--ink);
+    }
+
+    .transcript {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      background: var(--paper);
+    }
+
+    .claim {
+      position: relative;
+      border-right: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .claim-trigger {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr) 84px;
+      align-items: stretch;
+      width: 100%;
+      min-height: 178px;
+      padding: 0;
+      color: inherit;
+      background: transparent;
+      border: 0;
+      text-align: left;
+      cursor: pointer;
+      transition: color 170ms ease, background-color 170ms ease;
+    }
+
+    .claim-trigger:hover,
+    .claim-trigger:focus-visible {
+      color: var(--ink);
+      background: var(--wash);
+      box-shadow: inset 5px 0 0 var(--acid);
+    }
+
+    .claim-number {
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background: var(--wash);
+      border-right: 1px solid var(--ink);
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -.06em;
+    }
+
+    .claim:nth-child(2) .claim-number { background: var(--wash); }
+
+    .claim-copy {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: center;
+      padding: 22px 28px;
+    }
+
+    .claim-type {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .claim-trigger:hover .claim-type,
+    .claim-trigger:focus-visible .claim-type { color: var(--muted); }
+
+    .claim-value {
+      overflow-wrap: anywhere;
+      font-size: clamp(27px, 2.7vw, 39px);
+      font-weight: 850;
+      letter-spacing: -.045em;
+      line-height: 1.02;
+    }
+
+    .claim:nth-child(2) .claim-value { color: var(--signal-deep); }
+
+    .claim:nth-child(2) .claim-trigger:hover .claim-value,
+    .claim:nth-child(2) .claim-trigger:focus-visible .claim-value { color: var(--signal); }
+
+    .claim-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px 16px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .claim-trigger:hover .claim-meta,
+    .claim-trigger:focus-visible .claim-meta { color: var(--muted); }
+
+    .confidence {
+      padding-left: 16px;
+      border-left: 1px solid var(--rule);
+    }
+
+    .expand-mark {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      place-items: center;
+      border-left: 1px solid var(--rule);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      line-height: 1.05;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .expand-symbol {
+      font-size: 22px;
+      font-weight: 500;
+      line-height: 1;
+    }
+
+    .claim-trigger:hover .expand-mark,
+    .claim-trigger:focus-visible .expand-mark { border-color: #595a54; }
+
+    .claim-trigger[aria-expanded="true"] .expand-symbol { transform: rotate(45deg); }
+
+    .passage[hidden] { display: none; }
+
+    .passage {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      background: #fffdf6;
+      border-top: 1px solid var(--ink);
+    }
+
+    .passage-label {
+      padding: 19px 14px;
+      color: var(--paper);
+      background: var(--ink);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .source-sheet {
+      position: relative;
+      margin: 18px 24px 22px;
+      padding: 18px 22px;
+      background: #fff;
+      border: 1px solid var(--rule);
+      box-shadow: 5px 5px 0 #d4d1c7;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .source-sheet::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      padding: 4px 7px;
+      color: var(--paper);
+      background: var(--ink);
+      content: attr(data-page);
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+
+    .source-sheet p { margin: 0; }
+
+    .source-sheet p + p { margin-top: 8px; }
+
+    .source-highlight {
+      display: inline;
+      padding: 1px 3px;
+      background: var(--acid);
+      box-decoration-break: clone;
+      -webkit-box-decoration-break: clone;
+      font-weight: 900;
+    }
+
+    .claim:nth-child(2) .source-highlight { background: #ffb09e; }
+
+    .scan-viewer {
+      margin: 18px 24px 22px;
+    }
+
+    .scan-button {
+      position: relative;
+      display: block;
+      width: 100%;
+      padding: 0;
+      overflow: hidden;
+      background: #d8d4c9;
+      border: 1px solid var(--rule);
+      box-shadow: 5px 5px 0 #d4d1c7;
+      cursor: zoom-in;
+      text-align: left;
+    }
+
+    .scan-button:hover,
+    .scan-button:focus-visible { border-color: var(--ink); }
+
+    .stamp-disclaimer {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      padding: 5px 7px;
+      color: var(--signal-deep);
+      background: rgba(255, 253, 246, .96);
+      border: 1.5px solid var(--signal-deep);
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .scan-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: grayscale(.08) contrast(.97);
+    }
+
+    .scan-page,
+    .zoom-label {
+      position: absolute;
+      padding: 5px 8px;
+      color: var(--paper);
+      background: var(--ink);
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .scan-page { top: 0; right: 0; }
+
+    .zoom-label { right: auto; bottom: 10px; left: 10px; }
+
+    .scan-focus {
+      position: absolute;
+      top: 40%;
+      left: 19%;
+      width: 36%;
+      height: 14%;
+      border: 3px solid var(--signal);
+      pointer-events: none;
+    }
+
+    .workspace[data-scenario="uncertain"] .scan-focus {
+      border-style: dashed;
+    }
+
+    .ocr-alert {
+      display: none;
+      margin: 0 24px 22px;
+      padding: 12px 14px;
+      background: #fff4da;
+      border: 1px solid var(--ink);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .workspace[data-scenario="uncertain"] .ocr-alert { display: block; }
+
+    .workspace[data-scenario="uncertain"] .confidence {
+      color: var(--signal-deep);
+      font-weight: 900;
+    }
+
+    .unavailable {
+      display: none;
+      min-height: 118px;
+      margin: 18px 24px 22px;
+      padding: 20px;
+      place-items: center;
+      border: 2px dashed var(--rule);
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .workspace[data-scenario="missing"] .claim:nth-child(2) .scan-viewer,
+    .workspace[data-scenario="missing"] .claim:nth-child(2) .ocr-alert { display: none; }
+
+    .workspace[data-scenario="missing"] .claim:nth-child(2) .unavailable { display: grid; }
+
+    .rule-gutter {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      color: var(--ink);
+      background: var(--wash);
+      border-left: 2px solid var(--ink);
+    }
+
+    .rule-code {
+      padding: 22px 24px;
+      color: var(--ink);
+      background: var(--paper);
+      border-bottom: 1px solid var(--ink);
+      border-left: 6px solid var(--acid);
+    }
+
+    .rule-code span {
+      display: block;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .rule-code strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 24px;
+      letter-spacing: -.04em;
+    }
+
+    .rule-copy {
+      padding: 24px;
+      background: var(--paper);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .rule-copy p {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .rule-note {
+      display: block;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .missing-evidence {
+      flex: 1;
+      padding: 24px;
+    }
+
+    .missing-label {
+      display: block;
+      color: var(--signal);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .missing-evidence h2 {
+      margin: 7px 0 10px;
+      font-size: 24px;
+      letter-spacing: -.04em;
+      line-height: 1.02;
+    }
+
+    .missing-evidence p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .examples {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .examples li {
+      padding: 9px 0;
+      border-top: 1px solid var(--rule);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .resolution-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 24px;
+      margin-top: 14px;
+      padding: 16px 18px;
+      color: var(--paper);
+      background: var(--ink);
+      border: 2px solid var(--ink);
+      box-shadow: 7px 7px 0 var(--brand);
+    }
+
+    .resolution-bar-copy span,
+    .resolution-bar-copy strong { display: block; }
+
+    .resolution-bar-copy span {
+      color: #c9cec4;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .resolution-bar-copy strong {
+      margin-top: 4px;
+      font-size: 19px;
+      letter-spacing: -.025em;
+    }
+
+    .prepare-resolution {
+      min-height: 44px;
+      padding: 9px 16px;
+      color: var(--paper);
+      background: var(--brand);
+      border: 2px solid var(--paper);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .audit-panel {
+      margin-top: 20px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+    }
+
+    .audit-panel[hidden] { display: none; }
+
+    .audit-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .audit-head h2 { margin: 0; font-size: 19px; }
+
+    .reset-record {
+      padding: 7px 10px;
+      color: var(--signal-deep);
+      background: var(--paper);
+      border: 1px solid var(--signal-deep);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .audit-summary {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .audit-state {
+      padding: 18px;
+      color: var(--paper);
+      background: var(--brand);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .audit-state[data-outcome="request"] { color: var(--ink); background: var(--acid); }
+    .audit-state[data-outcome="reject"] { color: var(--ink); background: var(--signal); }
+    .audit-state[data-outcome="approve"] { background: var(--pass); }
+
+    .audit-next { padding: 18px 20px; }
+    .audit-next span,
+    .audit-next strong { display: block; }
+    .audit-next span { color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+    .audit-next strong { margin-top: 4px; font-size: 15px; }
+
+    .audit-list { margin: 0; padding: 0; list-style: none; }
+    .audit-entry { display: grid; grid-template-columns: 190px minmax(0, 1fr); }
+    .audit-entry + .audit-entry { border-top: 1px solid var(--rule); }
+    .audit-meta { padding: 16px 18px; color: var(--muted); border-right: 1px solid var(--rule); font-size: 11px; font-weight: 800; }
+    .audit-detail { padding: 16px 20px; }
+    .audit-detail strong { display: block; font-size: 14px; }
+    .audit-detail p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+
+    .resolution-dialog {
+      width: min(960px, calc(100% - 48px));
+      max-height: calc(100vh - 40px);
+      padding: 0;
+      color: var(--ink);
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      box-shadow: 12px 12px 0 var(--brand);
+    }
+
+    .resolution-dialog::backdrop { background: rgba(23, 25, 20, .78); }
+    .resolution-dialog form { margin: 0; }
+
+    .register-body {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      max-height: calc(100vh - 142px);
+      overflow: auto;
+    }
+
+    .register-main { padding: 22px; }
+    .register-context { padding: 22px; background: var(--wash); border-left: 1px solid var(--ink); }
+    .register-kicker { display: block; margin-bottom: 7px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .register-context h3 { margin: 0; font-size: 22px; line-height: 1.05; }
+    .register-context p { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+    .citation-list { margin: 18px 0 0; padding: 0; list-style: none; }
+    .citation-list li { padding: 10px 0; border-top: 1px solid var(--rule); font-size: 12px; }
+    .citation-list strong { display: block; }
+
+    fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+    legend { margin-bottom: 12px; font-size: 18px; font-weight: 900; }
+    .outcome-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .outcome-option { position: relative; display: block; }
+    .outcome-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+    .outcome-card { display: block; min-height: 100%; padding: 13px; background: var(--paper); border: 2px solid var(--rule); cursor: pointer; }
+    .outcome-card strong,
+    .outcome-card small { display: block; }
+    .outcome-card strong { font-size: 13px; }
+    .outcome-card small { margin-top: 5px; color: var(--muted); font-size: 10px; line-height: 1.3; }
+    .outcome-option input:checked + .outcome-card { border-color: var(--brand); box-shadow: inset 0 -5px 0 var(--brand); }
+    .outcome-option input:focus-visible + .outcome-card { outline: 4px solid var(--focus); outline-offset: 3px; }
+    .outcome-option input:disabled + .outcome-card { color: var(--muted); background: #ededeb; cursor: not-allowed; }
+
+    .outcome-fields { margin-top: 20px; }
+    .field-group { margin-top: 14px; }
+    .field-group label,
+    .field-group .field-label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 900; }
+    .field-group textarea,
+    .field-group select {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1.5px solid var(--ink);
+      border-radius: 0;
+      font: inherit;
+      font-size: 13px;
+    }
+    .field-group textarea { min-height: 92px; resize: vertical; }
+    .evidence-options { display: grid; gap: 7px; }
+    .check-option { display: flex; gap: 9px; align-items: flex-start; padding: 9px; border: 1px solid var(--rule); font-size: 12px; font-weight: 750; }
+    .check-option input { width: 18px; height: 18px; flex: 0 0 auto; margin: 0; }
+    .field-help { margin: 6px 0 0; color: var(--muted); font-size: 10px; }
+    .form-error { min-height: 20px; margin: 12px 0 0; color: var(--signal-deep); font-size: 12px; font-weight: 900; }
+
+    .consequence {
+      margin-top: 18px;
+      padding: 13px;
+      background: #eef2ff;
+      border: 1px solid var(--brand);
+      font-size: 12px;
+    }
+    .consequence strong { display: block; margin-bottom: 4px; }
+    .acknowledge { display: flex; gap: 9px; align-items: flex-start; margin-top: 14px; font-size: 11px; font-weight: 800; }
+    .acknowledge input { width: 18px; height: 18px; flex: 0 0 auto; margin: 0; }
+
+    .register-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px 18px;
+      border-top: 2px solid var(--ink);
+    }
+    .register-footer p { margin: 0; color: var(--muted); font-size: 10px; font-weight: 800; }
+    .register-actions { display: flex; gap: 8px; }
+    .register-actions button,
+    .register-actions a { min-height: 38px; padding: 8px 13px; border: 1.5px solid var(--ink); font-size: 11px; font-weight: 900; text-decoration: none; text-transform: uppercase; }
+    .register-cancel { color: var(--ink); background: var(--paper); cursor: pointer; }
+    .register-submit { color: var(--paper); background: var(--brand); cursor: pointer; }
+    .register-submit:disabled { color: var(--muted); background: #ddd; cursor: not-allowed; }
+    .register-receipt { padding: 28px; }
+    .register-receipt[hidden] { display: none; }
+    .register-receipt h3 { margin: 0; font-size: 28px; letter-spacing: -.04em; }
+    .register-receipt p { max-width: 650px; color: var(--muted); }
+    .receipt-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .receipt-actions a,
+    .receipt-actions button { min-height: 40px; padding: 9px 14px; border: 1.5px solid var(--ink); font-size: 11px; font-weight: 900; text-decoration: none; text-transform: uppercase; }
+    .receipt-actions a { color: var(--paper); background: var(--brand); }
+    .receipt-actions button { color: var(--ink); background: var(--paper); cursor: pointer; }
+
+    .footer-note {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      padding-top: 13px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .scan-dialog {
+      width: min(1120px, calc(100% - 48px));
+      max-height: calc(100vh - 48px);
+      padding: 0;
+      color: var(--ink);
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      box-shadow: 12px 12px 0 var(--signal);
+    }
+
+    .scan-dialog::backdrop { background: rgba(25, 26, 22, .78); }
+
+    .dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 14px 18px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .dialog-head h2 {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: -.02em;
+    }
+
+    .dialog-close {
+      min-height: 34px;
+      padding: 5px 10px;
+      color: var(--paper);
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .dialog-actions,
+    .zoom-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .zoom-controls {
+      padding-right: 10px;
+      border-right: 1px solid var(--rule);
+    }
+
+    .zoom-button {
+      min-width: 34px;
+      min-height: 34px;
+      padding: 4px 8px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1px solid var(--ink);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .zoom-button:disabled {
+      color: var(--muted);
+      background: #dddad0;
+      cursor: not-allowed;
+    }
+
+    .zoom-state {
+      min-width: 58px;
+      font-size: 10px;
+      font-weight: 900;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .dialog-surface {
+      max-height: calc(100vh - 150px);
+      padding: 24px;
+      overflow: auto;
+      overscroll-behavior: contain;
+      background: var(--canvas);
+    }
+
+    .dialog-scan-stage {
+      position: relative;
+      width: 100%;
+      min-width: 100%;
+    }
+
+    .dialog-surface img {
+      display: block;
+      width: 100%;
+      max-width: none;
+      height: auto;
+      border: 1px solid var(--rule);
+    }
+
+    @media (max-width: 920px) {
+      .workspace { grid-template-columns: minmax(0, 1fr) 270px; }
+
+      .conflict-synopsis { grid-template-columns: 150px minmax(0, 1fr); }
+
+      .synopsis-intro { padding: 15px; }
+
+      .synopsis-claim { padding: 16px; }
+
+      .synopsis-value { font-size: 28px; }
+
+      .claim-trigger { grid-template-columns: 72px minmax(0, 1fr) 72px; }
+
+      .claim-number { font-size: 28px; }
+
+      .claim-copy { padding: 20px; }
+
+      .passage { grid-template-columns: 72px minmax(0, 1fr); }
+
+      .rule-copy,
+      .missing-evidence { padding: 20px; }
+    }
+
+    @media (max-width: 700px) {
+      .cut-sheet {
+        position: absolute;
+        height: 22px;
+      }
+
+      .source-field,
+      .source-gap {
+        clip-path: none;
+        top: 0;
+        bottom: auto;
+        height: 11px;
+        border-width: 1px;
+      }
+
+      .form-field {
+        left: 0;
+        width: 50%;
+      }
+
+      .bank-field {
+        right: 0;
+        width: 50%;
+      }
+
+      .source-field > span,
+      .source-gap > span { display: none; }
+
+      .form-field > span { left: 0; }
+
+      .bank-field > span { right: 0; }
+
+      .ocr-edge {
+        top: 0;
+        right: auto;
+        bottom: auto;
+        left: 0;
+        width: 100%;
+        height: 11px;
+        border-top: 0;
+        border-left: 0;
+      }
+
+      .ocr-edge span { display: none; }
+
+      .ocr-state-label { display: none; }
+
+      .source-gap-label { display: none !important; }
+
+      body[data-scenario="uncertain"] .bank-field {
+        border-bottom: 3px dashed var(--ink);
+      }
+
+      .source-gap {
+        right: 0;
+        width: 50%;
+        background: var(--canvas);
+        border-style: dashed;
+        border-width: 1px 1px 3px;
+      }
+
+      .shell {
+        width: min(100% - 28px, 580px);
+        padding-top: 34px;
+      }
+
+      .masthead {
+        grid-template-columns: 1fr auto;
+        min-height: 42px;
+      }
+
+      .crumb { display: none; }
+
+      .prototype-label {
+        font-size: 10px;
+        letter-spacing: .04em;
+      }
+
+      .prototype-label::before { display: none; }
+
+      .page-head {
+        display: block;
+        padding: 28px 0 15px;
+      }
+
+      h1 { font-size: 40px; }
+
+      .case-facts {
+        justify-content: space-between;
+        margin-top: 18px;
+      }
+
+      .scenario-bar {
+        display: block;
+        padding: 10px 0;
+      }
+
+      .scenario-copy { display: none; }
+
+      .scenario-control {
+        justify-content: space-between;
+      }
+
+      .scenario-control select { width: 68%; }
+
+      .conflict-synopsis { display: block; }
+
+      .synopsis-intro {
+        align-items: flex-start;
+        flex-direction: row;
+        gap: 16px;
+        padding: 13px 14px;
+        border-top-width: 5px;
+        border-right: 0;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .synopsis-state {
+        max-width: 190px;
+        font-size: 15px;
+        text-align: right;
+      }
+
+      .synopsis-values { grid-template-columns: 1fr; }
+
+      .synopsis-claim { padding: 15px 14px; }
+
+      .synopsis-value { font-size: 28px; }
+
+      .synopsis-mark {
+        min-height: 34px;
+        border: 0;
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .synopsis-diff {
+        display: block;
+        padding: 12px 14px;
+      }
+
+      .synopsis-diff span {
+        display: block;
+        margin-top: 4px;
+      }
+
+      .mobile-pin {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border: 2px solid var(--ink);
+        border-bottom: 0;
+        background: var(--paper);
+      }
+
+      .pin-claim {
+        min-width: 0;
+        padding: 9px 10px 10px;
+      }
+
+      .pin-claim + .pin-claim { border-left: 1px solid var(--ink); }
+
+      .pin-claim span,
+      .pin-claim small { display: block; }
+
+      .pin-claim span {
+        overflow-wrap: anywhere;
+        font-size: 11px;
+        font-weight: 900;
+        line-height: 1.1;
+      }
+
+      .pin-claim small {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      .workspace { display: block; }
+
+      .transcript { border-right: 0; }
+
+      .claim { border-right: 0; }
+
+      .claim-trigger {
+        grid-template-columns: 58px minmax(0, 1fr) 56px;
+        min-height: 150px;
+      }
+
+      .claim-number { font-size: 22px; }
+
+      .claim-copy { padding: 18px 14px; }
+
+      .claim-value {
+        font-size: 29px;
+        overflow-wrap: anywhere;
+      }
+
+      .claim-meta {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 3px;
+      }
+
+      .confidence {
+        padding-left: 0;
+        border-left: 0;
+      }
+
+      .passage { grid-template-columns: 58px minmax(0, 1fr); }
+
+      .passage-label {
+        padding: 15px 8px;
+        font-size: 10px;
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+      }
+
+      .source-sheet {
+        margin: 14px 14px 18px;
+        padding: 17px 14px;
+        font-size: 11px;
+      }
+
+      .ocr-alert,
+      .unavailable { margin: 0 14px 18px; }
+
+      .scan-viewer { margin: 14px 14px 18px; }
+
+      .scan-focus {
+        top: 39%;
+        left: 17%;
+        width: 44%;
+        height: 17%;
+      }
+
+      .dialog-surface { padding: 14px; }
+
+      .dialog-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .dialog-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .zoom-controls { gap: 5px; }
+
+      .rule-gutter {
+        border-top: 2px solid var(--ink);
+        border-left: 0;
+      }
+
+      .rule-code {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 18px;
+      }
+
+      .rule-code strong {
+        margin: 0;
+        font-size: 19px;
+      }
+
+      .rule-copy,
+      .missing-evidence { padding: 18px; }
+
+      .missing-evidence h2 { font-size: 22px; }
+
+      .footer-note { display: block; }
+
+      .footer-note span:last-child { display: none; }
+
+      .resolution-bar { grid-template-columns: 1fr; }
+      .prepare-resolution { width: 100%; }
+      .register-body { display: block; max-height: calc(100vh - 154px); }
+      .register-context { border-top: 1px solid var(--ink); border-left: 0; }
+      .outcome-options { grid-template-columns: 1fr; }
+      .audit-summary,
+      .audit-entry { grid-template-columns: 1fr; }
+      .audit-meta { border-right: 0; border-bottom: 1px solid var(--rule); }
+      .register-footer { align-items: stretch; flex-direction: column; }
+      .register-actions { display: grid; grid-template-columns: 1fr 1fr; }
+      .register-actions button { width: 100%; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body data-scenario="default">
+  <div class="cut-sheet" aria-hidden="true">
+    <div class="source-field form-field"><span>Form §4.2 · source present</span></div>
+    <div class="source-field bank-field">
+      <div class="ocr-edge"></div>
+      <span>Bank p.1 · source present</span>
+    </div>
+    <div class="source-gap"></div>
+    <span class="field-state-label ocr-state-label">OCR transcription</span>
+    <span class="field-state-label source-gap-label">Bank source absent</span>
+  </div>
+  <a class="skip-link" href="#workspace">Skip to evidence transcript</a>
+
+  <main class="shell">
+    <header class="masthead" aria-label="Product header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>DOCKET / VENDOR OPERATIONS</span>
+      </div>
+      <a class="crumb" href="docket-slice.html">← Attention queue</a>
+      <div class="prototype-label">Local prototype</div>
+    </header>
+
+    <section class="page-head" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow" id="case-status-line">VEN-2026-042 · INDIA · HUMAN REVIEW</p>
+        <h1 id="page-title">Evidence review</h1>
+      </div>
+      <p class="case-facts">
+        <span>Asha Rao</span>
+        <span class="sla" id="case-sla">18m until overdue</span>
+      </p>
+    </section>
+
+    <div class="scenario-bar">
+      <p class="scenario-copy">Compare claims · inspect sources · apply the rule</p>
+      <div class="scenario-control">
+        <label for="scenario">Prototype scenario</label>
+        <select id="scenario">
+          <option value="default">Mismatch · readable sources</option>
+          <option value="uncertain">Mismatch · uncertain OCR</option>
+          <option value="missing">Bank source unavailable</option>
+          <option value="resolved">Relationship evidence verified</option>
+        </select>
+      </div>
+    </div>
+    <p class="sr-only" id="scenario-status" aria-live="polite" aria-atomic="true"></p>
+
+    <section class="conflict-synopsis" aria-labelledby="conflict-title">
+      <div class="synopsis-intro">
+        <span class="synopsis-kicker">Conflict summary</span>
+        <strong class="synopsis-state" id="summary-status">Onboarding blocked pending relationship evidence</strong>
+      </div>
+      <div class="synopsis-body">
+        <div class="synopsis-values">
+          <div class="synopsis-claim">
+            <span class="synopsis-source">Vendor-submitted claim</span>
+            <strong class="synopsis-value">Northstar Holdings</strong>
+            <span class="synopsis-meta">Vendor form §4.2 · vendor attestation · date not captured</span>
+          </div>
+          <div class="synopsis-mark" id="conflict-mark" aria-label="does not match">≠</div>
+          <div class="synopsis-claim">
+            <span class="synopsis-source" id="summary-bank-source">Document claim · OCR transcription</span>
+            <strong class="synopsis-value" id="summary-bank-value">Blue River Payments LLP</strong>
+            <span class="synopsis-meta" id="summary-bank-meta">Bank letter p.1 · issuer not independently verified · date not captured</span>
+          </div>
+        </div>
+        <p class="synopsis-diff">
+          <strong id="conflict-title">The recorded legal names do not match.</strong>
+          <span id="conflict-note">No legal-name tokens match; the relationship remains unproven.</span>
+        </p>
+      </div>
+    </section>
+
+    <div class="mobile-pin" aria-label="Pinned conflict summary">
+      <div class="pin-claim">
+        <span>Northstar Holdings</span>
+        <small>Vendor form §4.2</small>
+      </div>
+      <div class="pin-claim">
+        <span id="pin-holder">Blue River Payments LLP</span>
+        <small id="pin-source">Bank letter p.1</small>
+      </div>
+    </div>
+
+    <section class="workspace" id="workspace" data-scenario="default" aria-label="Evidence comparison workspace">
+      <div class="transcript">
+        <article class="claim">
+          <button class="claim-trigger" type="button" data-action-noun="source" data-source-label="vendor form claim — Northstar Holdings" aria-expanded="false" aria-controls="passage-vendor" aria-label="Inspect source: vendor form claim — Northstar Holdings" aria-describedby="vendor-claim-description">
+            <span class="claim-number" aria-hidden="true">01</span>
+            <span class="claim-copy">
+              <span class="claim-type">Submitted legal name</span>
+              <span class="claim-value">Northstar Holdings</span>
+              <span class="claim-meta" id="vendor-claim-description">
+                <span>Vendor form · §4.2</span>
+                <span>Native PDF text</span>
+                <span class="confidence">Exact extraction</span>
+              </span>
+            </span>
+            <span class="expand-mark" aria-hidden="true">
+              <span class="expand-label">Inspect source</span>
+              <span class="expand-symbol">+</span>
+            </span>
+          </button>
+          <div class="passage" id="passage-vendor" hidden>
+            <div class="passage-label">Exact passage</div>
+            <div class="source-sheet" data-page="FORM §4.2">
+              <p>4. BANK ACCOUNT DETAILS</p>
+              <p>Account holder / beneficiary name:<br><span class="source-highlight">Northstar Holdings</span></p>
+              <p>Bank: HDFC Bank · Account ending 8842</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="claim">
+          <button class="claim-trigger" type="button" data-action-noun="source" data-source-label="bank letter claim — Blue River Payments LLP" aria-expanded="false" aria-controls="passage-bank" aria-label="Inspect source: bank letter claim — Blue River Payments LLP" aria-describedby="bank-claim-description">
+            <span class="claim-number" aria-hidden="true">02</span>
+            <span class="claim-copy">
+              <span class="claim-type" id="bank-claim-type">Extracted account holder</span>
+              <span class="claim-value" id="bank-claim-value">Blue River Payments LLP</span>
+              <span class="claim-meta" id="bank-claim-description">
+                <span id="bank-citation">Bank letter · p.1</span>
+                <span id="bank-method">OCR text</span>
+                <span class="confidence" id="bank-confidence">96% legibility · not validation</span>
+              </span>
+            </span>
+            <span class="expand-mark" aria-hidden="true">
+              <span class="expand-label">Inspect source</span>
+              <span class="expand-symbol">+</span>
+            </span>
+          </button>
+          <div class="passage" id="passage-bank" hidden>
+            <div class="passage-label" id="bank-passage-label">Exact passage</div>
+            <div>
+              <div class="scan-viewer">
+                <button class="scan-button" id="scan-zoom-trigger" type="button" aria-haspopup="dialog" aria-controls="scan-dialog" aria-label="Zoom original bank letter page 1 scan">
+                  <img class="scan-image" src="bank-letter-scan.png" alt="Original scanned bank letter page 1. The visible sentence states that Blue River Payments LLP maintains Current Account ending 8842.">
+                  <span class="scan-page" aria-hidden="true">Original scan · p.1</span>
+                  <span class="scan-focus" aria-hidden="true"></span>
+                  <span class="zoom-label" aria-hidden="true">Open full-resolution scan ↗</span>
+                  <span class="stamp-disclaimer" aria-hidden="true">Sample mark · not validation</span>
+                </button>
+              </div>
+              <div class="ocr-alert">
+                OCR transcription is uncertain at 61% legibility. The image remains the source of truth; a reviewer must verify the highlighted text.
+              </div>
+              <div class="unavailable">
+                Bank letter was not provided. No account-holder comparison has been performed.
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+
+      <aside class="rule-gutter" aria-label="Governing rule and missing evidence">
+        <div class="rule-code">
+          <span>Governing rule</span>
+          <strong>VND-BANK-04</strong>
+        </div>
+        <div class="rule-copy">
+          <p>The legal name must match the beneficiary—or their relationship and payment authority must be documented.</p>
+          <span class="rule-note">A mismatch alone is not fraud or rejection.</span>
+        </div>
+        <div class="missing-evidence">
+          <span class="missing-label" id="gap-label">Needed to resolve</span>
+          <h2 id="gap-title">Prove the legal-entity link</h2>
+          <p id="gap-copy">Provide current evidence linking Blue River Payments LLP to Northstar Holdings.</p>
+          <ul class="examples" aria-label="Examples of acceptable relationship evidence">
+            <li id="gap-example-one">Current ownership or group-company record</li>
+            <li id="gap-example-two">Signed payment-authority documentation</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+
+    <section class="resolution-bar" aria-labelledby="resolution-title">
+      <div class="resolution-bar-copy">
+        <span>Human decision required</span>
+        <strong id="resolution-title">Resolve the case with evidence attached</strong>
+      </div>
+      <button class="prepare-resolution" id="prepare-resolution" type="button">Prepare resolution →</button>
+    </section>
+
+    <section class="audit-panel" id="audit-panel" aria-labelledby="audit-title" hidden>
+      <div class="audit-head">
+        <h2 id="audit-title">Local decision record</h2>
+        <button class="reset-record" id="reset-record" type="button">Reset demo record</button>
+      </div>
+      <div class="audit-summary">
+        <strong class="audit-state" id="audit-state">Needs review</strong>
+        <div class="audit-next">
+          <span>Next legitimate step</span>
+          <strong id="audit-next">Review evidence and decide</strong>
+        </div>
+      </div>
+      <ol class="audit-list" id="audit-list"></ol>
+    </section>
+
+    <div class="footer-note" aria-hidden="true">
+      <span>Source text remains verbatim · confidence describes legibility only</span>
+      <span>Enter or Space to inspect · Escape returns to the claim</span>
+    </div>
+  </main>
+
+  <dialog class="scan-dialog" id="scan-dialog" aria-labelledby="scan-dialog-title">
+    <div class="dialog-head">
+      <h2 id="scan-dialog-title">Original bank letter · page 1</h2>
+      <div class="dialog-actions">
+        <div class="zoom-controls" role="group" aria-label="Scan zoom controls">
+          <button class="zoom-button" id="scan-zoom-out" type="button" aria-label="Zoom out">−</button>
+          <output class="zoom-state" id="scan-zoom-state" aria-live="polite">Fit width</output>
+          <button class="zoom-button" id="scan-zoom-in" type="button" aria-label="Zoom in">+</button>
+          <button class="zoom-button" id="scan-zoom-reset" type="button">Fit</button>
+        </div>
+        <button class="dialog-close" id="scan-dialog-close" type="button">Close</button>
+      </div>
+    </div>
+    <div class="dialog-surface" id="scan-dialog-surface" tabindex="0" aria-label="Scrollable full-resolution bank letter">
+      <div class="dialog-scan-stage" id="dialog-scan-stage">
+        <img src="bank-letter-scan.png" alt="Enlarged sample bank letter page 1. It states that Blue River Payments LLP maintains Current Account ending 8842. A document stamp is present but has not been independently validated.">
+        <span class="stamp-disclaimer" aria-hidden="true">Sample mark · not validation</span>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog class="resolution-dialog" id="resolution-dialog" aria-labelledby="register-title">
+    <form id="resolution-form" novalidate>
+      <div class="dialog-head">
+        <div>
+          <span class="register-kicker">VEN-2026-042 · browser-local transaction</span>
+          <h2 id="register-title">Resolution register</h2>
+        </div>
+        <button class="dialog-close" id="resolution-close" type="button">Close</button>
+      </div>
+
+      <div id="register-editor">
+        <div class="register-body">
+          <div class="register-main">
+            <fieldset>
+              <legend>Choose the supported outcome</legend>
+              <div class="outcome-options">
+                <label class="outcome-option">
+                  <input type="radio" id="approve-outcome" name="outcome" value="approve" disabled>
+                  <span class="outcome-card"><strong>Approve</strong><small id="approve-availability">Unavailable: the beneficiary relationship is unresolved.</small></span>
+                </label>
+                <label class="outcome-option">
+                  <input type="radio" name="outcome" value="request">
+                  <span class="outcome-card"><strong>Request information</strong><small>Move the case to Awaiting vendor and record the draft request.</small></span>
+                </label>
+                <label class="outcome-option">
+                  <input type="radio" name="outcome" value="reject">
+                  <span class="outcome-card"><strong>Reject submission</strong><small>Close this submission without implying fraud.</small></span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="outcome-fields" id="outcome-fields" hidden>
+              <div id="request-fields" hidden>
+                <div class="field-group">
+                  <span class="field-label">Recipient / next actor</span>
+                  <strong>Primary vendor contact · Northstar Holdings</strong>
+                </div>
+                <div class="field-group">
+                  <span class="field-label">Evidence requested</span>
+                  <div class="evidence-options">
+                    <label class="check-option"><input type="checkbox" name="requestedEvidence" value="Current ownership or group-company record">Current ownership or group-company record</label>
+                    <label class="check-option"><input type="checkbox" name="requestedEvidence" value="Signed payment-authority documentation">Signed payment-authority documentation</label>
+                    <label class="check-option"><input type="checkbox" name="requestedEvidence" value="Clearer current bank letter">Clearer current bank letter</label>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label for="request-message">Vendor message</label>
+                  <textarea id="request-message" name="requestMessage" maxlength="1200">Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments.</textarea>
+                  <p class="field-help">Demo only: this message is recorded locally and is not sent.</p>
+                </div>
+              </div>
+
+              <div id="reject-fields" hidden>
+                <div class="field-group">
+                  <label for="reject-reason">Rejection reason</label>
+                  <select id="reject-reason" name="rejectReason">
+                    <option value="">Select a reason</option>
+                    <option>Bank beneficiary relationship was not substantiated</option>
+                    <option>Required bank evidence was not provided</option>
+                    <option>Submission was withdrawn by the vendor</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label for="reject-message">Vendor-facing explanation</label>
+                  <textarea id="reject-message" name="rejectMessage" maxlength="1200" placeholder="Explain the evidence-based reason and how the vendor may submit again."></textarea>
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label for="reviewer-rationale">Reviewer rationale</label>
+                <textarea id="reviewer-rationale" name="rationale" maxlength="1600" placeholder="Record why this outcome is supported by the cited evidence and rule."></textarea>
+              </div>
+
+              <div class="consequence" id="consequence-preview" aria-live="polite">
+                <strong>Consequence preview</strong>
+                <span>Choose an outcome to see what changes.</span>
+              </div>
+
+              <label class="acknowledge">
+                <input type="checkbox" id="review-acknowledgement" name="acknowledgement">
+                I reviewed the cited sources and understand this creates only a browser-local demo record.
+              </label>
+              <p class="form-error" id="form-error" role="alert" tabindex="-1"></p>
+            </div>
+          </div>
+
+          <aside class="register-context" aria-label="Evidence carried into this resolution">
+            <span class="register-kicker">Evidence snapshot</span>
+            <h3 id="register-finding">Recorded legal names do not match</h3>
+            <p id="register-uncertainty">Readable OCR transcription; issuer and relationship remain unverified.</p>
+            <ul class="citation-list">
+              <li><strong>Vendor form §4.2</strong>Northstar Holdings</li>
+              <li><strong id="register-bank-source">Bank letter p.1 · 96% legibility</strong><span id="register-bank-value">Blue River Payments LLP</span></li>
+              <li><strong>Rule VND-BANK-04</strong>Relationship and payment authority must be documented.</li>
+            </ul>
+          </aside>
+        </div>
+
+        <div class="register-footer">
+          <p>No external message or procurement record will be changed.</p>
+          <div class="register-actions">
+            <button class="register-cancel" id="resolution-cancel" type="button">Cancel</button>
+            <button class="register-submit" id="resolution-submit" type="submit">Record local outcome</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="register-receipt" id="register-receipt" hidden aria-live="polite">
+        <span class="register-kicker">Local record appended</span>
+        <h3 id="receipt-title">Outcome recorded</h3>
+        <p id="receipt-copy"></p>
+        <div class="receipt-actions">
+          <a id="return-queue" href="docket-slice.html">Return to updated queue →</a>
+          <button id="revise-resolution" type="button">Create a new revision</button>
+          <button id="receipt-close" type="button">Stay on evidence</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    const workspace = document.querySelector("#workspace");
+    const scenario = document.querySelector("#scenario");
+    const claimButtons = [...document.querySelectorAll(".claim-trigger")];
+    const bankButton = claimButtons[1];
+    const bankPassage = document.querySelector("#passage-bank");
+    const scanDialog = document.querySelector("#scan-dialog");
+    const scanZoomTrigger = document.querySelector("#scan-zoom-trigger");
+    const scanDialogClose = document.querySelector("#scan-dialog-close");
+    const scanDialogSurface = document.querySelector("#scan-dialog-surface");
+    const dialogScanStage = document.querySelector("#dialog-scan-stage");
+    const scanZoomOut = document.querySelector("#scan-zoom-out");
+    const scanZoomIn = document.querySelector("#scan-zoom-in");
+    const scanZoomReset = document.querySelector("#scan-zoom-reset");
+    const scanZoomState = document.querySelector("#scan-zoom-state");
+    const scenarioStatus = document.querySelector("#scenario-status");
+    const resolutionDialog = document.querySelector("#resolution-dialog");
+    const resolutionForm = document.querySelector("#resolution-form");
+    const prepareResolution = document.querySelector("#prepare-resolution");
+    const resolutionClose = document.querySelector("#resolution-close");
+    const resolutionCancel = document.querySelector("#resolution-cancel");
+    const outcomeFields = document.querySelector("#outcome-fields");
+    const requestFields = document.querySelector("#request-fields");
+    const rejectFields = document.querySelector("#reject-fields");
+    const consequencePreview = document.querySelector("#consequence-preview span");
+    const formError = document.querySelector("#form-error");
+    const registerEditor = document.querySelector("#register-editor");
+    const registerReceipt = document.querySelector("#register-receipt");
+    const auditPanel = document.querySelector("#audit-panel");
+    const auditList = document.querySelector("#audit-list");
+    const auditState = document.querySelector("#audit-state");
+    const auditNext = document.querySelector("#audit-next");
+    const resetRecord = document.querySelector("#reset-record");
+    const approvalInput = document.querySelector("#approve-outcome");
+    const decisionStorageKey = "docket.case.VEN-2026-042.v1";
+    const zoomSteps = [1, 1.5, 2];
+    let scanZoomIndex = 0;
+    let decisionRecord = { version: 1, events: [] };
+    let storageIssue = "";
+    let commitPending = false;
+
+    const outcomeContent = {
+      request: {
+        label: "Awaiting vendor",
+        next: "Wait for the requested relationship evidence, then reopen review.",
+        preview: "Status becomes Awaiting vendor; Northstar Holdings becomes the next actor; a simulated request and audit event are stored in this browser."
+      },
+      reject: {
+        label: "Rejected",
+        next: "Submission is closed locally; a new submission may be reviewed later.",
+        preview: "Status becomes Rejected; the case leaves active review; no fraud conclusion or external vendor notification is created."
+      },
+      approve: {
+        label: "Approved",
+        next: "Vendor may proceed to activation.",
+        preview: "Status becomes Approved and the case leaves active review."
+      }
+    };
+
+    function escapeHTML(value) {
+      return String(value).replace(/[&<>'"]/g, (character) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", "\"": "&quot;"
+      })[character]);
+    }
+
+    function loadDecisionRecord() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(decisionStorageKey) || "null");
+        const validEvent = (event) => event
+          && typeof event.id === "string"
+          && outcomeContent[event.outcome]
+          && typeof event.priorStatus === "string"
+          && typeof event.actor === "string"
+          && typeof event.timestamp === "string"
+          && typeof event.timestampLabel === "string"
+          && typeof event.rationale === "string"
+          && typeof event.reason === "string"
+          && typeof event.communication === "string"
+          && typeof event.evidenceSnapshot === "string"
+          && ["default", "uncertain", "missing", "resolved"].includes(event.scenario)
+          && event.rule === "VND-BANK-04"
+          && (event.outcome !== "approve" || event.scenario === "resolved");
+        if (parsed && parsed.version === 1 && Array.isArray(parsed.events) && parsed.events.every(validEvent)) decisionRecord = parsed;
+        else if (parsed) throw new Error("Unsupported local record");
+      } catch {
+        storageIssue = "The browser-local record could not be read. Reset it before relying on reload persistence.";
+        decisionRecord = { version: 1, events: [] };
+      }
+    }
+
+    function saveDecisionRecord() {
+      try {
+        localStorage.setItem(decisionStorageKey, JSON.stringify(decisionRecord));
+        storageIssue = "";
+        return true;
+      } catch {
+        storageIssue = "This outcome is visible for this page session but could not be saved in browser-local storage.";
+        return false;
+      }
+    }
+
+    function renderAudit() {
+      const events = decisionRecord.events;
+      const current = events.at(-1);
+      auditPanel.hidden = !current && !storageIssue;
+      if (!current) {
+        if (storageIssue) {
+          auditState.dataset.outcome = "reject";
+          auditState.textContent = "Storage unavailable";
+          auditNext.textContent = storageIssue;
+          auditList.innerHTML = "";
+        }
+        document.querySelector("#case-status-line").textContent = "VEN-2026-042 · INDIA · HUMAN REVIEW";
+        document.querySelector("#case-sla").textContent = "18m until overdue";
+        prepareResolution.textContent = "Prepare resolution →";
+        return;
+      }
+
+      const content = outcomeContent[current.outcome];
+      auditState.dataset.outcome = current.outcome;
+      auditState.textContent = content.label;
+      auditNext.textContent = content.next;
+      document.querySelector("#case-status-line").textContent = `VEN-2026-042 · INDIA · ${content.label.toUpperCase()}`;
+      document.querySelector("#case-sla").textContent = current.outcome === "request" ? "Vendor response due in 3d" : "No active review SLA";
+      document.querySelector(".crumb").href = "docket-slice.html";
+      prepareResolution.textContent = "Revise resolution →";
+      auditList.innerHTML = [...events].reverse().map((event, reverseIndex) => `
+        <li class="audit-entry">
+          <div class="audit-meta">${escapeHTML(event.timestampLabel)}<br>${escapeHTML(event.actor)}<br>Revision ${events.length - reverseIndex}</div>
+          <div class="audit-detail">
+            <strong>${escapeHTML(outcomeContent[event.outcome].label)} · prior state ${escapeHTML(event.priorStatus)}</strong>
+            <p>${escapeHTML(event.reason)} · ${escapeHTML(event.rationale)}</p>
+            <p>Evidence snapshot: ${escapeHTML(event.evidenceSnapshot)} · Rule VND-BANK-04</p>
+            ${event.communication ? `<p>Communication recorded locally: ${escapeHTML(event.communication)}</p>` : ""}
+          </div>
+        </li>`).join("");
+    }
+
+    function selectedOutcome() {
+      return resolutionForm.elements.outcome.value;
+    }
+
+    function updateOutcomeFields() {
+      const outcome = selectedOutcome();
+      outcomeFields.hidden = !outcome;
+      requestFields.hidden = outcome !== "request";
+      rejectFields.hidden = outcome !== "reject";
+      consequencePreview.textContent = outcome ? outcomeContent[outcome].preview : "Choose an outcome to see what changes.";
+      formError.textContent = "";
+    }
+
+    function updateRegisterContext() {
+      const value = scenario.value;
+      const context = {
+        default: ["Recorded legal names do not match", "Readable OCR transcription; issuer and relationship remain unverified.", "Bank letter p.1 · 96% legibility", "Blue River Payments LLP", "Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments."],
+        uncertain: ["Source text cannot yet support a mismatch", "OCR is only 61% legible; the highlighted original requires human verification.", "Bank letter p.1 · 61% legibility", "Blue River Payrnents LLP (uncertain OCR)", "Please provide a clearer current bank letter showing the complete beneficiary name so we can verify the account holder."],
+        missing: ["Required bank source is unavailable", "No bank extraction or legal-name comparison has been made.", "No bank source available", "No account-holder value", "Please provide a current bank letter or account confirmation that clearly shows the beneficiary name and account ending 8842."],
+        resolved: ["Beneficiary relationship is verified", "A current ownership record and signed payment authority resolve the legal-name difference.", "Relationship record · verified 26 Aug 2026", "Blue River Payments LLP · authorised beneficiary", "No additional evidence is required for this review."]
+      }[value];
+      document.querySelector("#register-finding").textContent = context[0];
+      document.querySelector("#register-uncertainty").textContent = context[1];
+      document.querySelector("#register-bank-source").textContent = context[2];
+      document.querySelector("#register-bank-value").textContent = context[3];
+      document.querySelector("#request-message").value = context[4];
+      approvalInput.disabled = value !== "resolved";
+      if (approvalInput.disabled && approvalInput.checked) {
+        approvalInput.checked = false;
+        updateOutcomeFields();
+      }
+      document.querySelector("#approve-availability").textContent = value === "resolved"
+        ? "Available: relationship evidence and payment authority are verified."
+        : "Unavailable: the beneficiary relationship is unresolved.";
+    }
+
+    function resetResolutionForm() {
+      resolutionForm.reset();
+      outcomeFields.hidden = true;
+      requestFields.hidden = true;
+      rejectFields.hidden = true;
+      formError.textContent = "";
+      registerEditor.hidden = false;
+      registerReceipt.hidden = true;
+      document.querySelector("#request-message").value = "Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments.";
+    }
+
+    function openResolution() {
+      resetResolutionForm();
+      updateRegisterContext();
+      resolutionDialog.showModal();
+      requestAnimationFrame(() => resolutionForm.querySelector('input[name="outcome"]:not(:disabled)').focus());
+    }
+
+    function closeResolution() {
+      resolutionDialog.close();
+    }
+
+    function validateResolution() {
+      const outcome = selectedOutcome();
+      const rationale = resolutionForm.elements.rationale.value.trim();
+      if (!outcome) return scenario.value === "resolved" ? "Choose Approve, Request information, or Reject submission." : "Choose Request information or Reject submission.";
+      if (outcome === "approve" && scenario.value !== "resolved") return "Approval is blocked until relationship evidence is verified.";
+      if (outcome === "request") {
+        const requested = [...resolutionForm.querySelectorAll('input[name="requestedEvidence"]:checked')];
+        if (!requested.length) return "Select at least one item of evidence to request.";
+        if (resolutionForm.elements.requestMessage.value.trim().length < 20) return "Write a clear vendor message of at least 20 characters.";
+      }
+      if (outcome === "reject") {
+        if (!resolutionForm.elements.rejectReason.value) return "Select a specific rejection reason.";
+        if (resolutionForm.elements.rejectMessage.value.trim().length < 20) return "Write a vendor-facing explanation of at least 20 characters.";
+      }
+      if (rationale.length < 12) return "Record a reviewer rationale of at least 12 characters.";
+      if (!resolutionForm.elements.acknowledgement.checked) return "Confirm that you reviewed the cited sources and understand the local-only scope.";
+      return "";
+    }
+
+    function commitResolution(event) {
+      event.preventDefault();
+      if (commitPending) return;
+      const validationMessage = validateResolution();
+      if (validationMessage) {
+        formError.textContent = validationMessage;
+        formError.focus();
+        return;
+      }
+
+      commitPending = true;
+      document.querySelector("#resolution-submit").disabled = true;
+      const outcome = selectedOutcome();
+      const prior = decisionRecord.events.at(-1);
+      const evidenceItems = [...resolutionForm.querySelectorAll('input[name="requestedEvidence"]:checked')].map((input) => input.value);
+      const communication = outcome === "request"
+        ? `${evidenceItems.join("; ")}. ${resolutionForm.elements.requestMessage.value.trim()}`
+        : resolutionForm.elements.rejectMessage.value.trim();
+      const evidenceSnapshot = `${document.querySelector("#register-finding").textContent}; ${document.querySelector("#register-bank-source").textContent}`;
+      const now = new Date();
+      decisionRecord.events.push({
+        id: `${now.getTime()}-${Math.random().toString(16).slice(2)}`,
+        outcome,
+        priorStatus: prior ? outcomeContent[prior.outcome].label : "Needs review",
+        actor: "Asha Rao",
+        timestamp: now.toISOString(),
+        timestampLabel: new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata", timeZoneName: "short" }).format(now),
+        rationale: resolutionForm.elements.rationale.value.trim(),
+        reason: outcome === "reject" ? resolutionForm.elements.rejectReason.value : "Requested supporting evidence",
+        communication,
+        evidenceSnapshot,
+        scenario: scenario.value,
+        rule: "VND-BANK-04"
+      });
+
+      const persisted = saveDecisionRecord();
+      renderAudit();
+      registerEditor.hidden = true;
+      registerReceipt.hidden = false;
+      document.querySelector("#receipt-title").textContent = `${outcomeContent[outcome].label} recorded`;
+      document.querySelector("#receipt-copy").textContent = persisted
+        ? `${outcomeContent[outcome].next} The audit event is stored only in this browser; no external action occurred.`
+        : `${outcomeContent[outcome].next} Storage failed, so this record will not survive reload. No external action occurred.`;
+      const queueStateURL = "docket-slice.html";
+      document.querySelector("#return-queue").href = queueStateURL;
+      document.querySelector(".crumb").href = queueStateURL;
+      commitPending = false;
+      document.querySelector("#resolution-submit").disabled = false;
+      requestAnimationFrame(() => document.querySelector("#receipt-close").focus());
+    }
+
+    function setExpanded(button, expanded) {
+      const panel = document.getElementById(button.getAttribute("aria-controls"));
+      const actionNoun = button.dataset.actionNoun;
+      const collapsedVerb = actionNoun === "source status" ? "View" : "Inspect";
+      const actionVerb = expanded ? "Hide" : collapsedVerb;
+      button.setAttribute("aria-expanded", String(expanded));
+      button.setAttribute("aria-label", `${actionVerb} ${actionNoun}: ${button.dataset.sourceLabel}`);
+      button.querySelector(".expand-label").textContent = `${actionVerb} ${actionNoun}`;
+      panel.hidden = !expanded;
+    }
+
+    claimButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setExpanded(button, button.getAttribute("aria-expanded") !== "true");
+      });
+
+      button.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          setExpanded(button, false);
+          button.focus();
+        }
+      });
+
+      const panel = document.getElementById(button.getAttribute("aria-controls"));
+      panel.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !scanDialog.open) {
+          event.preventDefault();
+          setExpanded(button, false);
+          button.focus();
+        }
+      });
+    });
+
+    function applyScenario(value) {
+      const bankWasExpanded = bankButton.getAttribute("aria-expanded") === "true";
+      workspace.dataset.scenario = value;
+      document.body.dataset.scenario = value;
+
+      const copy = {
+        default: {
+          type: "Extracted account holder",
+          value: "Blue River Payments LLP",
+          citation: "Bank letter · p.1",
+          method: "OCR text",
+          confidence: "96% legibility · not validation",
+          pin: "Blue River Payments LLP",
+          pinSource: "Bank letter p.1",
+          mark: "≠",
+          markLabel: "does not match",
+          summaryStatus: "Onboarding blocked pending relationship evidence",
+          summarySource: "Document claim · OCR transcription",
+          summaryMeta: "Bank letter p.1 · issuer not independently verified · date not captured",
+          title: "The recorded legal names do not match.",
+          note: "No legal-name tokens match; the relationship remains unproven.",
+          gapLabel: "Needed to resolve",
+          gapTitle: "Prove the legal-entity link",
+          gapCopy: "Provide current evidence linking Blue River Payments LLP to Northstar Holdings.",
+          exampleOne: "Current ownership or group-company record",
+          exampleTwo: "Signed payment-authority documentation",
+          passageLabel: "Exact passage"
+        },
+        uncertain: {
+          type: "Uncertain OCR transcription",
+          value: "Blue River Payrnents LLP",
+          citation: "Bank letter · p.1",
+          method: "OCR text · verify image",
+          confidence: "61% legibility · uncertain",
+          pin: "Blue River Payrnents LLP",
+          pinSource: "Bank letter p.1 · uncertain OCR",
+          mark: "?",
+          markLabel: "cannot yet be compared",
+          summaryStatus: "Onboarding blocked pending source verification",
+          summarySource: "Document claim · uncertain OCR",
+          summaryMeta: "Bank letter p.1 · 61% legibility · verify original image",
+          title: "The source text is too uncertain to confirm a mismatch.",
+          note: "No mismatch decision has been made; verify the original image first.",
+          gapLabel: "Next check",
+          gapTitle: "Verify the source text",
+          gapCopy: "Confirm the highlighted name from the original scan before applying VND-BANK-04.",
+          exampleOne: "Human transcription of the original scan",
+          exampleTwo: "Clearer bank letter or account confirmation",
+          passageLabel: "Exact passage"
+        },
+        missing: {
+          type: "Account-holder source",
+          value: "Bank letter unavailable",
+          citation: "No page available",
+          method: "Source not provided",
+          confidence: "No extraction performed",
+          pin: "Bank letter unavailable",
+          pinSource: "No source page",
+          mark: "—",
+          markLabel: "cannot be compared",
+          summaryStatus: "Onboarding blocked pending bank evidence",
+          summarySource: "Required document unavailable",
+          summaryMeta: "No bank source · no extraction · no comparison",
+          title: "The bank source is unavailable.",
+          note: "No name comparison or mismatch determination has been made.",
+          gapLabel: "Next evidence",
+          gapTitle: "Provide account-holder proof",
+          gapCopy: "A current bank source must show the beneficiary name before comparison.",
+          exampleOne: "Current bank letter or account confirmation",
+          exampleTwo: "Original page showing the beneficiary name",
+          passageLabel: "Source unavailable"
+        },
+        resolved: {
+          type: "Verified authorised beneficiary",
+          value: "Blue River Payments LLP",
+          citation: "Bank letter · p.1",
+          method: "OCR text · human verified",
+          confidence: "96% legibility · source inspected",
+          pin: "Blue River Payments LLP",
+          pinSource: "Bank letter p.1 · relationship verified",
+          mark: "Linked",
+          markLabel: "linked by verified relationship evidence",
+          summaryStatus: "Decision ready · relationship evidence verified",
+          summarySource: "Document claim · human verified",
+          summaryMeta: "Bank letter p.1 · ownership record · signed payment authority",
+          title: "The different legal names are supported by a verified relationship.",
+          note: "Ownership and signed payment authority establish Blue River Payments LLP as an authorised beneficiary.",
+          gapLabel: "Evidence accepted",
+          gapTitle: "Relationship established",
+          gapCopy: "The legal-name difference is resolved under VND-BANK-04.",
+          exampleOne: "Ownership record verified · 26 Aug 2026",
+          exampleTwo: "Signed payment authority verified · 26 Aug 2026",
+          passageLabel: "Verified source"
+        }
+      }[value];
+
+      document.querySelector("#bank-claim-type").textContent = copy.type;
+      document.querySelector("#bank-claim-value").textContent = copy.value;
+      document.querySelector("#bank-citation").textContent = copy.citation;
+      document.querySelector("#bank-method").textContent = copy.method;
+      document.querySelector("#bank-confidence").textContent = copy.confidence;
+      document.querySelector("#pin-holder").textContent = copy.pin;
+      document.querySelector("#pin-source").textContent = copy.pinSource;
+      document.querySelector("#conflict-mark").textContent = copy.mark;
+      document.querySelector("#conflict-mark").setAttribute("aria-label", copy.markLabel);
+      document.querySelector("#summary-status").textContent = copy.summaryStatus;
+      document.querySelector("#summary-bank-source").textContent = copy.summarySource;
+      document.querySelector("#summary-bank-value").textContent = copy.value;
+      document.querySelector("#summary-bank-meta").textContent = copy.summaryMeta;
+      document.querySelector("#conflict-title").textContent = copy.title;
+      document.querySelector("#conflict-note").textContent = copy.note;
+      document.querySelector("#gap-label").textContent = copy.gapLabel;
+      document.querySelector("#gap-title").textContent = copy.gapTitle;
+      document.querySelector("#gap-copy").textContent = copy.gapCopy;
+      document.querySelector("#gap-example-one").textContent = copy.exampleOne;
+      document.querySelector("#gap-example-two").textContent = copy.exampleTwo;
+      document.querySelector("#bank-passage-label").textContent = copy.passageLabel;
+      bankButton.dataset.sourceLabel = value === "missing"
+        ? "bank letter unavailable"
+        : `bank letter claim — ${copy.value}`;
+      bankButton.dataset.actionNoun = value === "missing" ? "source status" : "source";
+
+      if (value === "missing") {
+        bankButton.setAttribute("aria-describedby", "bank-claim-description missing-source-note");
+        document.querySelector(".unavailable").id = "missing-source-note";
+      } else {
+        bankButton.setAttribute("aria-describedby", "bank-claim-description");
+        document.querySelector(".unavailable").removeAttribute("id");
+      }
+
+      const sourceRequired = value === "uncertain" || value === "missing";
+      setExpanded(bankButton, sourceRequired || bankWasExpanded);
+      scenarioStatus.textContent = value === "uncertain"
+        ? "Uncertain OCR selected. The bank source is open for verification."
+        : value === "missing"
+          ? "Missing bank source selected. No mismatch has been determined."
+          : value === "resolved"
+            ? "Verified relationship evidence selected. Approval is now available in the resolution register."
+            : "Readable-source mismatch selected. The prior evidence context is preserved.";
+    }
+
+    scenario.addEventListener("change", (event) => {
+      applyScenario(event.target.value);
+      if (resolutionDialog.open) updateRegisterContext();
+    });
+
+    resolutionForm.addEventListener("change", (event) => {
+      if (event.target.name === "outcome") updateOutcomeFields();
+      formError.textContent = "";
+    });
+    resolutionForm.addEventListener("input", () => { formError.textContent = ""; });
+    resolutionForm.addEventListener("submit", commitResolution);
+    prepareResolution.addEventListener("click", openResolution);
+    resolutionClose.addEventListener("click", closeResolution);
+    resolutionCancel.addEventListener("click", closeResolution);
+    document.querySelector("#receipt-close").addEventListener("click", closeResolution);
+    document.querySelector("#revise-resolution").addEventListener("click", () => {
+      resetResolutionForm();
+      updateRegisterContext();
+      requestAnimationFrame(() => resolutionForm.querySelector('input[name="outcome"]:not(:disabled)').focus());
+    });
+    resolutionDialog.addEventListener("close", () => prepareResolution.focus());
+    resetRecord.addEventListener("click", () => {
+      if (!window.confirm("Delete the complete browser-local decision history for VEN-2026-042? This cannot be undone.")) return;
+      decisionRecord = { version: 1, events: [] };
+      storageIssue = "";
+      try { localStorage.removeItem(decisionStorageKey); } catch {
+        storageIssue = "The browser-local record could not be cleared. Browser storage is unavailable.";
+      }
+      renderAudit();
+      document.querySelector(".crumb").href = "docket-slice.html";
+      scenarioStatus.textContent = storageIssue || "The browser-local decision history was reset.";
+      prepareResolution.focus();
+    });
+
+    function updateScanZoom(index) {
+      scanZoomIndex = Math.max(0, Math.min(index, zoomSteps.length - 1));
+      const scale = zoomSteps[scanZoomIndex];
+      dialogScanStage.style.width = `${scale * 100}%`;
+      scanZoomState.textContent = scale === 1 ? "Fit width" : `${scale * 100}%`;
+      scanZoomOut.disabled = scanZoomIndex === 0;
+      scanZoomIn.disabled = scanZoomIndex === zoomSteps.length - 1;
+    }
+
+    scanZoomTrigger.addEventListener("click", () => {
+      updateScanZoom(0);
+      scanDialogSurface.scrollTo(0, 0);
+      scanDialog.showModal();
+      requestAnimationFrame(() => scanDialogSurface.focus());
+    });
+    scanZoomOut.addEventListener("click", () => updateScanZoom(scanZoomIndex - 1));
+    scanZoomIn.addEventListener("click", () => updateScanZoom(scanZoomIndex + 1));
+    scanZoomReset.addEventListener("click", () => {
+      updateScanZoom(0);
+      scanDialogSurface.scrollTo(0, 0);
+    });
+    scanDialogClose.addEventListener("click", () => scanDialog.close());
+    scanDialog.addEventListener("click", (event) => {
+      if (event.target === scanDialog) scanDialog.close();
+    });
+    scanDialog.addEventListener("close", () => scanZoomTrigger.focus());
+    loadDecisionRecord();
+    renderAudit();
+    updateScanZoom(0);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1403 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Docket — Attention queue</title>
+  <style>
+    :root {
+      --ink: #191a16;
+      --paper: #f7f5ef;
+      --canvas: #ffffff;
+      --muted: #66675f;
+      --rule: #b8b6ad;
+      --brand: #2f5bff;
+      --due: #ffd166;
+      --overdue: #f06449;
+      --overdue-deep: #9b2c1f;
+      --pass: #237a57;
+      --focus: #2f5bff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--canvas); }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 16px;
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    button { font: inherit; }
+
+    .skip-link {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      z-index: 30;
+      padding: 10px 14px;
+      color: var(--paper);
+      background: var(--ink);
+      transform: translateY(-170%);
+    }
+
+    .skip-link:focus { transform: none; }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    :focus-visible {
+      position: relative;
+      z-index: 4;
+      outline: 4px solid var(--focus);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(1380px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 20px 0 72px;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 46px;
+      padding-bottom: 11px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 28px;
+      height: 28px;
+      place-items: center;
+      color: var(--canvas);
+      background: var(--brand);
+      border: 2px solid var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      transform: rotate(-3deg);
+    }
+
+    .mode {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .queue-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 28px;
+      margin: 32px 0 14px;
+    }
+
+    .queue-heading h1 {
+      margin: 0;
+      font-size: clamp(38px, 4vw, 56px);
+      font-weight: 850;
+      letter-spacing: -.06em;
+      line-height: .92;
+    }
+
+    .queue-heading p {
+      max-width: 380px;
+      margin: 0 0 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    .queue-heading p span,
+    .queue-heading p time { display: block; }
+
+    .queue-heading p time {
+      margin-top: 4px;
+      color: var(--ink);
+    }
+
+    .workload-index {
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      box-shadow: 7px 7px 0 var(--ink);
+    }
+
+    .index-head,
+    .filter-axis {
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr);
+    }
+
+    .index-head {
+      color: var(--paper);
+      background: var(--ink);
+    }
+
+    .index-title,
+    .index-scope,
+    .axis-label {
+      padding: 14px 18px;
+    }
+
+    .index-title {
+      margin: 0;
+      border-right: 1px solid #55564f;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .index-scope {
+      margin: 0;
+      color: #c8c9bf;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .filter-axis { border-top: 1px solid var(--ink); }
+
+    .axis-label {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 1px solid var(--ink);
+    }
+
+    .axis-label strong {
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .axis-label span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .filter-set {
+      display: grid;
+      min-width: 0;
+    }
+
+    .workflow-filters { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+    .deadline-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+    .filter-button {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      min-height: 68px;
+      padding: 10px 16px;
+      color: var(--ink);
+      background: transparent;
+      border: 0;
+      border-right: 1px solid var(--rule);
+      cursor: pointer;
+      text-align: left;
+      transition: color 150ms ease, background-color 150ms ease;
+    }
+
+    .filter-button:last-child { border-right: 0; }
+
+    .filter-button:hover { background: #e4e1d7; }
+
+    .filter-button[aria-pressed="true"] {
+      color: var(--paper);
+      background: var(--ink);
+    }
+
+    .filter-button[aria-pressed="true"] .filter-count { color: var(--canvas); }
+
+    .filter-button[data-filter="dueSoon"][aria-pressed="true"] .filter-count { color: var(--due); }
+
+    .filter-button[data-filter="overdue"][aria-pressed="true"] .filter-count { color: var(--overdue); }
+
+    .filter-count {
+      min-width: 34px;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -.07em;
+      line-height: .9;
+    }
+
+    .filter-copy strong,
+    .filter-copy span { display: block; }
+
+    .filter-copy strong {
+      overflow: hidden;
+      font-size: 12px;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .filter-copy span {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .filter-button[aria-pressed="true"] .filter-copy span { color: #c8c9bf; }
+
+    .index-note {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin: 0;
+      padding: 9px 14px;
+      color: var(--muted);
+      background: #dedbd0;
+      border-top: 1px solid var(--ink);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .result-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 28px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .result-bar p { margin: 0; }
+
+    .result-summary {
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .result-context {
+      margin-left: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .clear-filters {
+      min-height: 34px;
+      padding: 6px 10px;
+      color: var(--ink);
+      background: var(--paper);
+      border: 1.5px solid var(--ink);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .clear-filters:disabled {
+      color: var(--muted);
+      background: transparent;
+      border-color: var(--rule);
+      cursor: not-allowed;
+    }
+
+    .case-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .case-row {
+      position: relative;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0 var(--ink);
+      transition: box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .case-row:hover,
+    .case-row:focus-within {
+      box-shadow: 8px 8px 0 var(--brand);
+      transform: translate(-2px, -2px);
+    }
+
+    .case-summary {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr) 258px;
+      width: 100%;
+      min-height: 226px;
+    }
+
+    .case-sla {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px 18px;
+      border-right: 1px solid var(--ink);
+    }
+
+    .case-row[data-urgency="overdue"] .case-sla { background: var(--overdue); }
+
+    .case-row[data-urgency="dueSoon"] .case-sla { background: var(--due); }
+
+    .queue-rank,
+    .urgency-label,
+    .deadline { display: block; }
+
+    .queue-rank {
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .urgency-value {
+      display: block;
+      margin-top: 24px;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -.05em;
+      line-height: .95;
+    }
+
+    .urgency-label {
+      margin-top: 5px;
+      font-size: 11px;
+      font-weight: 900;
+      line-height: 1.1;
+    }
+
+    .deadline {
+      margin-top: 18px;
+      font-size: 10px;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .case-core {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 17px;
+      padding: 18px 24px 17px;
+    }
+
+    .case-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .exception-label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--overdue-deep);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .entity-compare {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) clamp(78px, 8vw, 112px) minmax(0, 1fr);
+      align-items: stretch;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .entity {
+      min-width: 0;
+      padding: 10px 0 11px;
+    }
+
+    .entity:last-child { padding-left: 16px; }
+
+    .entity-source,
+    .entity-value { display: block; }
+
+    .entity-source {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .entity-value {
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+      font-size: clamp(20px, 2vw, 30px);
+      font-weight: 850;
+      letter-spacing: -.04em;
+      line-height: 1;
+    }
+
+    .compare-mark {
+      display: grid;
+      place-items: center;
+      color: var(--overdue-deep);
+      border-right: 1px solid var(--rule);
+      border-left: 1px solid var(--rule);
+      padding: 8px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      line-height: 1.1;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .case-row[data-match="true"] .compare-mark { color: var(--pass); }
+
+    .checks {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .check::before {
+      display: grid;
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+      place-items: center;
+      color: var(--paper);
+      background: var(--pass);
+      border: 1px solid var(--ink);
+      content: "✓";
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .check[data-state="review"]::before {
+      color: var(--ink);
+      background: var(--overdue);
+      content: "!";
+    }
+
+    .check[data-state="waiting"]::before {
+      color: var(--ink);
+      background: var(--canvas);
+      content: "…";
+    }
+
+    .case-action {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 18px 20px;
+      border-left: 1px solid var(--rule);
+    }
+
+    .actor-label,
+    .action-label,
+    .actor-name,
+    .next-action { display: block; }
+
+    .actor-label,
+    .action-label {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    .actor-name {
+      margin-top: 4px;
+      font-size: 14px;
+      font-weight: 850;
+    }
+
+    .next-action {
+      margin-top: 5px;
+      font-size: 19px;
+      font-weight: 850;
+      letter-spacing: -.025em;
+      line-height: 1.05;
+    }
+
+    .case-controls {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      padding-top: 10px;
+      border-top: 1px solid var(--rule);
+    }
+
+    .case-controls.has-review { grid-template-columns: 1fr 1fr; }
+
+    .case-trigger,
+    .open-review {
+      display: grid;
+      min-height: 36px;
+      place-items: center;
+      padding: 6px 8px;
+      font-size: 10px;
+      font-weight: 900;
+      line-height: 1.15;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .case-trigger {
+      color: var(--muted);
+      background: transparent;
+      border: 1px solid var(--rule);
+      cursor: pointer;
+    }
+
+    .case-trigger[aria-expanded="true"] { color: var(--overdue-deep); border-color: var(--overdue-deep); }
+
+    .open-review {
+      color: var(--canvas);
+      background: var(--brand);
+      border: 1px solid var(--ink);
+      text-decoration: none;
+    }
+
+    .case-details {
+      display: grid;
+      grid-template-columns: 150px repeat(3, minmax(0, 1fr));
+      background: #fffdf6;
+      border-top: 2px solid var(--ink);
+    }
+
+    .case-details[hidden] { display: none; }
+
+    .detail-title,
+    .detail-block { padding: 17px 20px 19px; }
+
+    .detail-title {
+      margin: 0;
+      color: var(--paper);
+      background: var(--ink);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .detail-block { border-right: 1px solid var(--rule); }
+
+    .detail-block:last-child { border-right: 0; }
+
+    .detail-block strong,
+    .detail-block span { display: block; }
+
+    .detail-block strong {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .detail-block span {
+      margin-top: 6px;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .empty-state {
+      display: grid;
+      min-height: 230px;
+      place-items: center;
+      padding: 30px;
+      background: var(--paper);
+      border: 2px dashed var(--ink);
+      text-align: center;
+    }
+
+    .empty-state strong {
+      display: block;
+      font-size: 24px;
+      letter-spacing: -.03em;
+    }
+
+    .empty-state p {
+      margin: 7px 0 17px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .empty-state button {
+      padding: 8px 12px;
+      color: var(--paper);
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      cursor: pointer;
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .footer-note {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      margin-top: 20px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    @media (max-width: 1000px) {
+      .case-summary { grid-template-columns: 132px minmax(0, 1fr); }
+
+      .case-sla { grid-row: 1 / span 2; }
+
+      .case-action {
+        display: grid;
+        grid-template-columns: 1fr 1.4fr;
+        grid-column: 2;
+        border-top: 1px solid var(--rule);
+        border-left: 0;
+      }
+
+      .case-controls { grid-column: 1 / -1; }
+
+      .case-details { grid-template-columns: 132px 1fr 1fr; }
+
+      .detail-block:last-child {
+        grid-column: 2 / -1;
+        border-top: 1px solid var(--rule);
+      }
+    }
+
+    @media (max-width: 900px) and (min-width: 721px) {
+      .workflow-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+      .workflow-filters .filter-button:nth-child(3) { border-right: 0; }
+
+      .workflow-filters .filter-button:nth-child(-n + 3) { border-bottom: 1px solid var(--rule); }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        width: min(100% - 28px, 580px);
+        padding-top: 14px;
+      }
+
+      .mode { max-width: 120px; text-align: right; }
+
+      .queue-heading {
+        display: block;
+        margin-top: 28px;
+      }
+
+      .queue-heading h1 { font-size: 39px; }
+
+      .queue-heading p {
+        margin-top: 10px;
+        text-align: left;
+      }
+
+      .index-head,
+      .filter-axis { display: block; }
+
+      .index-title { border-right: 0; }
+
+      .index-scope { padding-top: 0; }
+
+      .axis-label {
+        border-right: 0;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .workflow-filters,
+      .deadline-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+      .filter-button { border-bottom: 1px solid var(--rule); }
+
+      .workflow-filters .filter-button:nth-child(2),
+      .deadline-filters .filter-button:nth-child(2) { border-right: 0; }
+
+      .deadline-filters .filter-button:first-child { grid-column: 1 / -1; }
+
+      .index-note { display: block; }
+
+      .index-note span { display: block; }
+
+      .index-note span + span { margin-top: 3px; }
+
+      .result-bar { align-items: flex-end; }
+
+      .result-context {
+        display: block;
+        margin: 3px 0 0;
+      }
+
+      .case-summary { display: block; }
+
+      .case-sla {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-right: 0;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .urgency-value { margin: 0; font-size: 25px; }
+
+      .urgency-label { margin: 0; }
+
+      .deadline { margin: 0; text-align: right; }
+
+      .case-core { padding: 16px 14px; }
+
+      .case-meta { display: block; }
+
+      .case-meta span { display: block; }
+
+      .case-meta span + span { margin-top: 3px; }
+
+      .entity-compare { grid-template-columns: 1fr; }
+
+      .entity,
+      .entity:last-child { padding: 10px 0; }
+
+      .compare-mark {
+        min-height: 28px;
+        border: 0;
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .entity-value { font-size: 24px; }
+
+      .checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+      .case-action {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 14px;
+        border-top: 1px solid var(--rule);
+      }
+
+      .case-controls { grid-column: auto; }
+
+      .case-details { display: block; }
+
+      .case-details[hidden] { display: none; }
+
+      .detail-title,
+      .detail-block { padding: 14px; }
+
+      .detail-block {
+        border-right: 0;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .detail-block:last-child { border-bottom: 0; }
+
+      .footer-note { display: block; }
+
+      .footer-note span { display: block; }
+
+      .footer-note span + span { margin-top: 4px; }
+    }
+
+    @media (max-width: 350px) {
+      .workflow-filters,
+      .deadline-filters { grid-template-columns: 1fr; }
+
+      .deadline-filters .filter-button:first-child { grid-column: auto; }
+
+      .filter-button,
+      .workflow-filters .filter-button:nth-child(2),
+      .deadline-filters .filter-button:nth-child(2) { border-right: 0; }
+
+      .filter-copy strong {
+        text-overflow: clip;
+        white-space: normal;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#queue-results">Skip to queue results</a>
+
+  <main class="shell">
+    <header class="masthead" aria-label="Product header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">D</span>
+        <span>DOCKET / VENDOR OPERATIONS</span>
+      </div>
+      <div class="mode">Local prototype · session-only filters</div>
+    </header>
+
+    <section aria-labelledby="queue-title">
+      <div class="queue-heading">
+        <h1 id="queue-title">Attention queue</h1>
+        <p>
+          <span>Reviewer-owned work first · then vendor-owned follow-up</span>
+          <time datetime="2026-08-26T16:54:00+05:30">Fixed prototype clock · 26 Aug 2026 · 16:54 IST</time>
+        </p>
+      </div>
+
+      <section class="workload-index" aria-labelledby="workload-title">
+        <div class="index-head">
+          <h2 class="index-title" id="workload-title">Workload index</h2>
+          <p class="index-scope">Counts describe the complete five-case prototype queue, not the filtered result.</p>
+        </div>
+
+        <div class="filter-axis">
+          <div class="axis-label" id="workflow-definition">
+            <strong>Workflow state</strong>
+            <span>Mutually exclusive · who acts next</span>
+          </div>
+          <div class="filter-set workflow-filters" role="group" aria-label="Filter by workflow state" aria-describedby="workflow-definition">
+            <button class="filter-button" type="button" data-axis="state" data-filter="all" aria-pressed="true">
+              <span class="filter-count" id="count-all">5</span>
+              <span class="filter-copy"><strong>All work</strong><span>Complete sample</span></span>
+            </button>
+            <button class="filter-button" type="button" data-axis="state" data-filter="review" aria-pressed="false">
+              <span class="filter-count" id="count-review">2</span>
+              <span class="filter-copy"><strong>Needs review</strong><span>Reviewer judgment</span></span>
+            </button>
+            <button class="filter-button" type="button" data-axis="state" data-filter="awaiting" aria-pressed="false">
+              <span class="filter-count" id="count-awaiting">2</span>
+              <span class="filter-copy"><strong>Awaiting vendor</strong><span>Vendor acts next</span></span>
+            </button>
+            <button class="filter-button" type="button" data-axis="state" data-filter="ready" aria-pressed="false">
+              <span class="filter-count" id="count-ready">1</span>
+              <span class="filter-copy"><strong>Decision ready</strong><span>Checks resolved</span></span>
+            </button>
+            <button class="filter-button" type="button" data-axis="state" data-filter="approved" aria-pressed="false">
+              <span class="filter-count" id="count-approved">0</span>
+              <span class="filter-copy"><strong>Approved</strong><span>Locally recorded</span></span>
+            </button>
+            <button class="filter-button" type="button" data-axis="state" data-filter="rejected" aria-pressed="false">
+              <span class="filter-count" id="count-rejected">0</span>
+              <span class="filter-copy"><strong>Rejected</strong><span>Locally recorded</span></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-axis">
+          <div class="axis-label" id="deadline-definition">
+            <strong>SLA urgency</strong>
+            <span>Overlaps workflow · due soon = 60m</span>
+          </div>
+          <div class="filter-set deadline-filters" role="group" aria-label="Filter by SLA urgency" aria-describedby="deadline-definition">
+            <button class="filter-button" type="button" data-axis="urgency" data-filter="all" aria-pressed="true">
+              <span class="filter-count" id="count-deadline-all">5</span>
+              <span class="filter-copy"><strong>All deadlines</strong><span>No SLA filter</span></span>
+            </button>
+            <button class="filter-button" type="button" data-axis="urgency" data-filter="overdue" aria-pressed="false">
+              <span class="filter-count" id="count-overdue">2</span>
+              <span class="filter-copy"><strong>Overdue</strong><span>Deadline passed</span></span>
+            </button>
+            <button class="filter-button" type="button" data-axis="urgency" data-filter="dueSoon" aria-pressed="false">
+              <span class="filter-count" id="count-due-soon">2</span>
+              <span class="filter-copy"><strong>Due ≤60m</strong><span>Unresolved in window</span></span>
+            </button>
+          </div>
+        </div>
+
+        <p class="index-note">
+          <span>Workflow and SLA filters compose across axes</span>
+          <span>Counts remain base-queue totals</span>
+        </p>
+      </section>
+
+      <div class="result-bar" id="queue-results" tabindex="-1">
+        <p>
+          <span class="result-summary" id="result-summary" aria-live="polite" aria-atomic="true">Showing 5 of 5 cases</span>
+          <span class="result-context" id="result-context">All workflow · all deadlines</span>
+        </p>
+        <button class="clear-filters" id="clear-filters" type="button" disabled>Clear filters</button>
+      </div>
+
+      <div class="case-list" id="case-list" role="list" aria-label="Vendor cases ordered by actionable urgency"></div>
+
+      <div class="footer-note" aria-hidden="true">
+        <span>Exact deadlines shown in India Standard Time</span>
+        <span>Enter or Space to inspect · Escape to close</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const cases = [
+      {
+        id: "VEN-2026-031",
+        country: "India",
+        vendor: "Nova Retail Systems Pvt Ltd",
+        state: "review",
+        stateLabel: "Needs review",
+        ownerLabel: "Review owner",
+        owner: "Mira Sen",
+        urgency: "overdue",
+        urgencyValue: "12m",
+        urgencyLabel: "overdue",
+        deadline: "26 Aug 2026 · 16:42 IST",
+        deadlineISO: "2026-08-26T16:42:00+05:30",
+        priority: 1,
+        exception: "Registration-name mismatch",
+        submittedLabel: "Vendor form §2.1",
+        submitted: "Nova Retail Systems Pvt Ltd",
+        sourceLabel: "GST certificate §1",
+        source: "Nova Retail Services Pvt Ltd",
+        compare: "≠",
+        compareLabel: "does not match",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "review"], ["Bank", "pass"], ["Screening", "pass"]],
+        action: "Verify amendment or correct registration",
+        rule: "Registered legal names must match, or a current amendment must explain the difference.",
+        evidence: "Vendor form names Nova Retail Systems. GST certificate names Nova Retail Services.",
+        resolves: "Current corporate-name amendment or corrected tax registration."
+      },
+      {
+        id: "VEN-2026-042",
+        country: "India",
+        vendor: "Northstar Holdings",
+        state: "review",
+        stateLabel: "Needs review",
+        ownerLabel: "Review owner",
+        owner: "Asha Rao",
+        urgency: "dueSoon",
+        urgencyValue: "18m",
+        urgencyLabel: "until overdue",
+        deadline: "26 Aug 2026 · 17:12 IST",
+        deadlineISO: "2026-08-26T17:12:00+05:30",
+        priority: 2,
+        exception: "Bank account-holder mismatch",
+        submittedLabel: "Vendor form §4.2",
+        submitted: "Northstar Holdings",
+        sourceLabel: "Bank letter p.1",
+        source: "Blue River Payments LLP",
+        compare: "≠",
+        compareLabel: "does not match",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "review"], ["Screening", "pass"]],
+        action: "Request relationship evidence",
+        reviewHref: "evidence-transcript-slice.html",
+        rule: "The vendor and beneficiary names must match, or their relationship and payment authority must be documented.",
+        evidence: "Vendor form names Northstar Holdings. Bank letter names Blue River Payments LLP.",
+        resolves: "Ownership record or signed payment-authority documentation."
+      },
+      {
+        id: "VEN-2026-044",
+        country: "Singapore",
+        vendor: "Meridian Analytics Pte. Ltd.",
+        state: "ready",
+        stateLabel: "Decision ready",
+        ownerLabel: "Decision owner",
+        owner: "Asha Rao",
+        urgency: "dueSoon",
+        urgencyValue: "44m",
+        urgencyLabel: "until overdue",
+        deadline: "26 Aug 2026 · 17:38 IST",
+        deadlineISO: "2026-08-26T17:38:00+05:30",
+        priority: 3,
+        exception: "Checks resolved · decision required",
+        submittedLabel: "Vendor form §4.2",
+        submitted: "Meridian Analytics Pte. Ltd.",
+        sourceLabel: "Bank letter p.1",
+        source: "Meridian Analytics Pte. Ltd.",
+        compare: "=",
+        compareLabel: "matches",
+        match: true,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "pass"], ["Screening", "pass"]],
+        action: "Review evidence and decide",
+        rule: "All required identity, tax, bank, and screening checks must be resolved before decision.",
+        evidence: "The legal name and beneficiary name align across the reviewed sources.",
+        resolves: "A reviewer records approval or a reasoned exception decision."
+      },
+      {
+        id: "VEN-2026-027",
+        country: "Germany",
+        vendor: "Alpine Design GmbH",
+        state: "awaiting",
+        stateLabel: "Awaiting vendor",
+        ownerLabel: "Next actor",
+        owner: "Vendor · Clara Weiss",
+        urgency: "overdue",
+        urgencyValue: "31m",
+        urgencyLabel: "overdue",
+        deadline: "26 Aug 2026 · 16:23 IST",
+        deadlineISO: "2026-08-26T16:23:00+05:30",
+        priority: 4,
+        exception: "Relationship evidence missing",
+        submittedLabel: "Vendor form §4.2",
+        submitted: "Alpine Design GmbH",
+        sourceLabel: "Bank letter p.2",
+        source: "Alpine Studio GmbH",
+        compare: "≠",
+        compareLabel: "does not match",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "waiting"], ["Screening", "pass"]],
+        action: "Await ownership document",
+        rule: "A related beneficiary must be supported by current ownership and payment-authority evidence.",
+        evidence: "The vendor and bank-holder names differ; no relationship record is present.",
+        resolves: "Vendor supplies the requested ownership document."
+      },
+      {
+        id: "VEN-2026-048",
+        country: "Canada",
+        vendor: "Fieldstone Foods Inc.",
+        state: "awaiting",
+        stateLabel: "Awaiting vendor",
+        ownerLabel: "Next actor",
+        owner: "Vendor · Amélie Roy",
+        urgency: "later",
+        urgencyValue: "4h",
+        urgencyLabel: "until overdue",
+        deadline: "26 Aug 2026 · 20:55 IST",
+        deadlineISO: "2026-08-26T20:55:00+05:30",
+        priority: 5,
+        exception: "Tax-name clarification requested",
+        submittedLabel: "Vendor form §2.1",
+        submitted: "Fieldstone Foods Inc.",
+        sourceLabel: "Tax registration §1",
+        source: "Fieldstone Foods Incorporated",
+        compare: "?",
+        compareLabel: "requires clarification",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "waiting"], ["Bank", "pass"], ["Screening", "pass"]],
+        action: "Await corrected tax form",
+        rule: "Legal-name abbreviations require a registration source that clearly establishes equivalence.",
+        evidence: "The submitted abbreviation is not corroborated by the current tax form.",
+        resolves: "Vendor supplies a corrected form or registration evidence."
+      }
+    ];
+
+    const decisionStorageKey = "docket.case.VEN-2026-042.v1";
+
+    function applySavedDecision() {
+      try {
+        const validOutcomes = ["request", "reject", "approve"];
+        const record = JSON.parse(localStorage.getItem(decisionStorageKey) || "null");
+        const validEvent = (event) => event
+          && typeof event.id === "string"
+          && validOutcomes.includes(event.outcome)
+          && typeof event.actor === "string"
+          && typeof event.timestamp === "string"
+          && typeof event.rationale === "string"
+          && typeof event.evidenceSnapshot === "string"
+          && ["default", "uncertain", "missing", "resolved"].includes(event.scenario)
+          && event.rule === "VND-BANK-04"
+          && (event.outcome !== "approve" || event.scenario === "resolved");
+        const validRecord = record?.version === 1 && Array.isArray(record.events) && record.events.every(validEvent);
+        const latest = validRecord ? record.events.at(-1) : null;
+        if (!latest) return;
+        const item = cases.find((entry) => entry.id === "VEN-2026-042");
+        if (!item) return;
+
+        item.ownerLabel = latest.outcome === "request" ? "Next actor" : "Recorded by";
+        item.owner = latest.outcome === "request" ? "Vendor · Northstar Holdings" : "Asha Rao";
+        item.urgency = "later";
+        item.urgencyValue = latest.outcome === "request" ? "3d" : "—";
+        item.urgencyLabel = latest.outcome === "request" ? "vendor response due" : "case closed locally";
+        item.deadline = latest.outcome === "request" ? "29 Aug 2026 · 17:12 IST" : "No active SLA";
+        item.deadlineISO = latest.outcome === "request" ? "2026-08-29T17:12:00+05:30" : "";
+        item.action = latest.outcome === "request" ? "Await requested relationship evidence" : "Open the decision record";
+        item.exception = latest.outcome === "request" ? "Relationship evidence requested" : latest.outcome === "approve" ? "Submission approved" : "Submission rejected";
+        item.state = latest.outcome === "request" ? "awaiting" : latest.outcome === "approve" ? "approved" : "rejected";
+        item.stateLabel = latest.outcome === "request" ? "Awaiting vendor" : latest.outcome === "approve" ? "Approved" : "Rejected";
+        if (latest.outcome === "request") item.checks = item.checks.map(([label, state]) => [label, label === "Bank" ? "waiting" : state]);
+
+        const reorderedIds = ["VEN-2026-031", "VEN-2026-044", "VEN-2026-027", "VEN-2026-048", "VEN-2026-042"];
+        reorderedIds.forEach((id, index) => {
+          const entry = cases.find((candidate) => candidate.id === id);
+          if (entry) entry.priority = index + 1;
+        });
+      } catch {
+        // The evidence screen exposes recovery for malformed browser-local records.
+      }
+    }
+
+    applySavedDecision();
+
+    const stateLabels = {
+      all: "All workflow",
+      review: "Needs review",
+      awaiting: "Awaiting vendor",
+      ready: "Decision ready",
+      approved: "Approved",
+      rejected: "Rejected"
+    };
+
+    const urgencyLabels = {
+      all: "all deadlines",
+      overdue: "overdue",
+      dueSoon: "due within 60 minutes"
+    };
+
+    const caseList = document.querySelector("#case-list");
+    const resultSummary = document.querySelector("#result-summary");
+    const resultContext = document.querySelector("#result-context");
+    const clearFilters = document.querySelector("#clear-filters");
+    const filterButtons = [...document.querySelectorAll(".filter-button")];
+    const filterStorageKey = "docket.queueFilters.v1";
+    let stateFilter = "all";
+    let urgencyFilter = "all";
+
+    function countWhere(axis, value) {
+      return cases.filter((item) => item[axis] === value).length;
+    }
+
+    function checkMarkup([label, state]) {
+      const stateText = state === "pass" ? "passed" : state === "review" ? "human review" : "awaiting evidence";
+      return `<span class="check" role="listitem" data-state="${state}"><span>${label}<span class="sr-only">: ${stateText}</span></span></span>`;
+    }
+
+    function caseMarkup(item) {
+      return `
+        <article class="case-row" role="listitem" data-case-id="${item.id}" data-urgency="${item.urgency}" data-match="${item.match}" data-expanded="false">
+          <div class="case-summary">
+            <span class="case-sla">
+              <span class="queue-rank">Priority ${String(item.priority).padStart(2, "0")}</span>
+              <span>
+                <span class="urgency-value">${item.urgencyValue}</span>
+                <span class="urgency-label">${item.urgencyLabel}</span>
+              </span>
+              <time class="deadline"${item.deadlineISO ? ` datetime="${item.deadlineISO}"` : ""}>${item.deadlineISO ? "Due " : ""}${item.deadline}</time>
+            </span>
+
+            <span class="case-core">
+              <span class="case-meta">
+                <span>${item.id} · ${item.country}</span>
+                <span>${item.stateLabel}</span>
+              </span>
+
+              <span>
+                <span class="exception-label">${item.exception}</span>
+                <span class="entity-compare">
+                  <span class="entity">
+                    <span class="entity-source">${item.submittedLabel}</span>
+                    <span class="entity-value">${item.submitted}</span>
+                  </span>
+                  <span class="compare-mark">${item.compareLabel}</span>
+                  <span class="entity">
+                    <span class="entity-source">${item.sourceLabel}</span>
+                    <span class="entity-value">${item.source}</span>
+                  </span>
+                </span>
+              </span>
+
+              <span class="checks" role="list" aria-label="Evidence health">${item.checks.map(checkMarkup).join("")}</span>
+            </span>
+
+            <span class="case-action">
+              <span>
+                <span class="actor-label">${item.ownerLabel}</span>
+                <span class="actor-name">${item.owner}</span>
+              </span>
+              <span>
+                <span class="action-label">Next legitimate step</span>
+                <span class="next-action">${item.action}</span>
+              </span>
+              <span class="case-controls${item.reviewHref ? " has-review" : ""}">
+                <button class="case-trigger" type="button" aria-expanded="false" aria-controls="details-${item.id}" aria-label="Inspect ${item.vendor} case ${item.id}" aria-describedby="summary-${item.id}" data-case-label="${item.vendor} case ${item.id}">Inspect case ↓</button>
+                ${item.reviewHref
+                  ? `<a class="open-review" href="${item.reviewHref}">${item.state === "awaiting" ? "View request" : item.state === "approved" || item.state === "rejected" ? "Open record" : "Open review"} ↗</a>`
+                  : ""}
+              </span>
+              <span class="sr-only" id="summary-${item.id}">${item.urgencyValue} ${item.urgencyLabel}. Due ${item.deadline}. ${item.exception}. ${item.ownerLabel}: ${item.owner}. Next step: ${item.action}.</span>
+            </span>
+          </div>
+
+          <div class="case-details" id="details-${item.id}" hidden>
+            <h2 class="detail-title">Why this state</h2>
+            <div class="detail-block"><strong>Governing condition</strong><span>${item.rule}</span></div>
+            <div class="detail-block"><strong>Source evidence</strong><span>${item.evidence}</span></div>
+            <div class="detail-block"><strong>Resolution</strong><span>${item.resolves}</span></div>
+          </div>
+        </article>`;
+    }
+
+    function filteredCases() {
+      return cases
+        .filter((item) => stateFilter === "all" || item.state === stateFilter)
+        .filter((item) => urgencyFilter === "all" || item.urgency === urgencyFilter)
+        .sort((a, b) => a.priority - b.priority);
+    }
+
+    function syncFilterButtons() {
+      filterButtons.forEach((button) => {
+        const activeValue = button.dataset.axis === "state" ? stateFilter : urgencyFilter;
+        button.setAttribute("aria-pressed", String(button.dataset.filter === activeValue));
+      });
+      clearFilters.disabled = stateFilter === "all" && urgencyFilter === "all";
+    }
+
+    function renderCases() {
+      const visibleCases = filteredCases();
+      const count = visibleCases.length;
+      caseList.setAttribute("role", count ? "list" : "region");
+      resultSummary.textContent = `Showing ${count} of ${cases.length} ${count === 1 ? "case" : "cases"}`;
+      resultContext.textContent = `${stateLabels[stateFilter]} · ${urgencyLabels[urgencyFilter]}`;
+
+      caseList.innerHTML = count
+        ? visibleCases.map(caseMarkup).join("")
+        : `
+          <div class="empty-state">
+            <div>
+              <strong>No sample cases match</strong>
+              <p>This filter combination is valid, but the five-case prototype contains no matching record.</p>
+              <button type="button" data-clear-empty>Clear filters</button>
+            </div>
+          </div>`;
+      syncFilterButtons();
+    }
+
+    function saveFilters() {
+      try {
+        sessionStorage.setItem(filterStorageKey, JSON.stringify({ stateFilter, urgencyFilter }));
+      } catch {}
+    }
+
+    function restoreFilters() {
+      try {
+        const saved = JSON.parse(sessionStorage.getItem(filterStorageKey));
+        const validStates = ["all", "review", "awaiting", "ready", "approved", "rejected"];
+        const validUrgencies = ["all", "overdue", "dueSoon"];
+        if (saved && validStates.includes(saved.stateFilter)) stateFilter = saved.stateFilter;
+        if (saved && validUrgencies.includes(saved.urgencyFilter)) urgencyFilter = saved.urgencyFilter;
+      } catch {
+        stateFilter = "all";
+        urgencyFilter = "all";
+      }
+    }
+
+    function resetFilters(focusAll = false) {
+      stateFilter = "all";
+      urgencyFilter = "all";
+      saveFilters();
+      renderCases();
+      if (focusAll) {
+        requestAnimationFrame(() => document.querySelector('[data-axis="state"][data-filter="all"]').focus());
+      }
+    }
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        if (button.dataset.axis === "state") stateFilter = button.dataset.filter;
+        if (button.dataset.axis === "urgency") urgencyFilter = button.dataset.filter;
+        saveFilters();
+        renderCases();
+      });
+    });
+
+    clearFilters.addEventListener("click", () => resetFilters(true));
+
+    caseList.addEventListener("click", (event) => {
+      const clearButton = event.target.closest("[data-clear-empty]");
+      if (clearButton) {
+        resetFilters(true);
+        return;
+      }
+
+      const trigger = event.target.closest(".case-trigger");
+      if (!trigger) return;
+      const row = trigger.closest(".case-row");
+      const details = document.getElementById(trigger.getAttribute("aria-controls"));
+      const expanded = trigger.getAttribute("aria-expanded") !== "true";
+      trigger.setAttribute("aria-expanded", String(expanded));
+      trigger.setAttribute("aria-label", `${expanded ? "Hide" : "Inspect"} ${trigger.dataset.caseLabel}`);
+      trigger.textContent = expanded ? "Hide case ↑" : "Inspect case ↓";
+      row.dataset.expanded = String(expanded);
+      details.hidden = !expanded;
+    });
+
+    caseList.addEventListener("keydown", (event) => {
+      const trigger = event.target.closest(".case-trigger");
+      if (!trigger || event.key !== "Escape") return;
+      event.preventDefault();
+      const details = document.getElementById(trigger.getAttribute("aria-controls"));
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.setAttribute("aria-label", `Inspect ${trigger.dataset.caseLabel}`);
+      trigger.textContent = "Inspect case ↓";
+      trigger.closest(".case-row").dataset.expanded = "false";
+      details.hidden = true;
+      trigger.focus();
+    });
+
+    document.querySelector("#count-all").textContent = cases.length;
+    document.querySelector("#count-deadline-all").textContent = cases.length;
+    document.querySelector("#count-review").textContent = countWhere("state", "review");
+    document.querySelector("#count-awaiting").textContent = countWhere("state", "awaiting");
+    document.querySelector("#count-ready").textContent = countWhere("state", "ready");
+    document.querySelector("#count-approved").textContent = countWhere("state", "approved");
+    document.querySelector("#count-rejected").textContent = countWhere("state", "rejected");
+    document.querySelector("#count-overdue").textContent = countWhere("urgency", "overdue");
+    document.querySelector("#count-due-soon").textContent = countWhere("urgency", "dueSoon");
+    restoreFilters();
+    renderCases();
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) window.location.reload();
+    });
+  </script>
+</body>
+</html>

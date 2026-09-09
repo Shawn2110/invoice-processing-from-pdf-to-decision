@@ -1,0 +1,7 @@
+.DS_Store
+work/
+outputs/docket-slice-*.png
+outputs/evidence-background-*.png
+outputs/evidence-transcript-*.png
+outputs/number-style-options.html
+outputs/vendor-trust-desk-demo.html
