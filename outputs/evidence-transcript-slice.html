@@ -960,13 +960,54 @@
     }
 
     .register-main { padding: 22px; }
-    .register-context { padding: 22px; background: var(--wash); border-left: 1px solid var(--ink); }
+    .register-context { min-width: 0; padding: 22px; background: var(--wash); border-left: 1px solid var(--ink); }
     .register-kicker { display: block; margin-bottom: 7px; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
     .register-context h3 { margin: 0; font-size: 22px; line-height: 1.05; }
     .register-context p { margin: 9px 0 0; color: var(--muted); font-size: 12px; }
-    .citation-list { margin: 18px 0 0; padding: 0; list-style: none; }
-    .citation-list li { padding: 10px 0; border-top: 1px solid var(--rule); font-size: 12px; }
-    .citation-list strong { display: block; }
+    .decision-comparison {
+      display: grid;
+      gap: 0;
+      margin-top: 18px;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .decision-claim { padding: 12px 0; }
+
+    .decision-claim + .decision-claim { border-top: 1px solid var(--rule); }
+
+    .decision-claim span,
+    .decision-claim strong,
+    .decision-claim small { display: block; }
+
+    .decision-claim span,
+    .decision-rule span {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .decision-claim strong {
+      margin-top: 3px;
+      overflow-wrap: anywhere;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .decision-claim small {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .decision-rule { margin-top: 16px; }
+
+    .decision-rule strong { display: block; margin-top: 3px; font-size: 14px; }
+
+    .decision-rule p { margin-top: 5px; }
 
     fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
     legend { margin-bottom: 12px; font-size: 18px; font-weight: 900; }
@@ -1000,8 +1041,20 @@
     }
     .field-group textarea { min-height: 92px; resize: vertical; }
     .evidence-options { display: grid; gap: 7px; }
-    .check-option { display: flex; gap: 9px; align-items: flex-start; padding: 9px; border: 1px solid var(--rule); font-size: 12px; font-weight: 750; }
-    .check-option input { width: 18px; height: 18px; flex: 0 0 auto; margin: 0; }
+    .field-group .check-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 44px;
+      margin: 0;
+      padding: 10px 12px;
+      border: 1px solid var(--rule);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+    .check-option input { width: 20px; height: 20px; flex: 0 0 auto; margin: 0; }
     .field-help { margin: 6px 0 0; color: var(--muted); font-size: 10px; }
     .form-error { min-height: 20px; margin: 12px 0 0; color: var(--signal-deep); font-size: 12px; font-weight: 900; }
 
@@ -1173,6 +1226,20 @@
 
       .rule-copy,
       .missing-evidence { padding: 20px; }
+    }
+
+    @media (max-width: 860px) {
+      .resolution-dialog { width: min(720px, calc(100% - 32px)); }
+
+      .register-body {
+        display: block;
+        max-height: calc(100vh - 154px);
+      }
+
+      .register-context {
+        border-top: 1px solid var(--ink);
+        border-left: 0;
+      }
     }
 
     @media (max-width: 700px) {
@@ -1458,8 +1525,6 @@
 
       .resolution-bar { grid-template-columns: 1fr; }
       .prepare-resolution { width: 100%; }
-      .register-body { display: block; max-height: calc(100vh - 154px); }
-      .register-context { border-top: 1px solid var(--ink); border-left: 0; }
       .outcome-options { grid-template-columns: 1fr; }
       .audit-summary,
       .audit-entry { grid-template-columns: 1fr; }
@@ -1790,11 +1855,23 @@
             <span class="register-kicker">Evidence snapshot</span>
             <h3 id="register-finding">Recorded legal names do not match</h3>
             <p id="register-uncertainty">Readable OCR transcription; issuer and relationship remain unverified.</p>
-            <ul class="citation-list">
-              <li><strong>Vendor form §4.2</strong>Northstar Holdings</li>
-              <li><strong id="register-bank-source">Bank letter p.1 · 96% legibility</strong><span id="register-bank-value">Blue River Payments LLP</span></li>
-              <li><strong>Rule VND-BANK-04</strong>Relationship and payment authority must be documented.</li>
-            </ul>
+            <div class="decision-comparison" aria-label="Submitted entity compared with the account holder">
+              <div class="decision-claim">
+                <span>Submitted legal entity</span>
+                <strong>Northstar Holdings</strong>
+                <small>Vendor form §4.2</small>
+              </div>
+              <div class="decision-claim">
+                <span>Account holder in evidence</span>
+                <strong id="register-bank-value">Blue River Payments LLP</strong>
+                <small id="register-bank-source">Bank letter p.1 · OCR legibility 96% · not identity verification</small>
+              </div>
+            </div>
+            <div class="decision-rule">
+              <span>Governing rule</span>
+              <strong>VND-BANK-04</strong>
+              <p>Relationship and payment authority must be documented.</p>
+            </div>
           </aside>
         </div>
 
@@ -1974,8 +2051,8 @@
     function updateRegisterContext() {
       const value = scenario.value;
       const context = {
-        default: ["Recorded legal names do not match", "Readable OCR transcription; issuer and relationship remain unverified.", "Bank letter p.1 · 96% legibility", "Blue River Payments LLP", "Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments."],
-        uncertain: ["Source text cannot yet support a mismatch", "OCR is only 61% legible; the highlighted original requires human verification.", "Bank letter p.1 · 61% legibility", "Blue River Payrnents LLP (uncertain OCR)", "Please provide a clearer current bank letter showing the complete beneficiary name so we can verify the account holder."],
+        default: ["Recorded legal names do not match", "The account-holder relationship is not verified.", "Bank letter p.1 · OCR legibility 96% · not identity verification", "Blue River Payments LLP", "Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments."],
+        uncertain: ["Source text cannot yet support a mismatch", "The highlighted original requires human verification.", "Bank letter p.1 · OCR legibility 61% · not identity verification", "Blue River Payrnents LLP (uncertain OCR)", "Please provide a clearer current bank letter showing the complete beneficiary name so we can verify the account holder."],
         missing: ["Required bank source is unavailable", "No bank extraction or legal-name comparison has been made.", "No bank source available", "No account-holder value", "Please provide a current bank letter or account confirmation that clearly shows the beneficiary name and account ending 8842."],
         resolved: ["Beneficiary relationship is verified", "A current ownership record and signed payment authority resolve the legal-name difference.", "Relationship record · verified 26 Aug 2026", "Blue River Payments LLP · authorised beneficiary", "No additional evidence is required for this review."]
       }[value];

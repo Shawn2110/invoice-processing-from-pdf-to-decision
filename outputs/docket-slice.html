@@ -219,7 +219,85 @@
 
     .workflow-filters { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 
-    .deadline-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .sla-filter-set {
+      display: grid;
+      grid-template-columns: 116px minmax(0, 1fr);
+      align-items: stretch;
+      min-width: 0;
+      padding: 10px 14px;
+      gap: 12px;
+    }
+
+    .sla-all {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-width: 0;
+      min-height: 48px;
+      padding: 8px 11px;
+      color: var(--ink);
+      background: var(--canvas);
+      border: 1px solid var(--ink);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      text-align: left;
+    }
+
+    .sla-all strong { font-size: 20px; }
+
+    .sla-all:hover,
+    .sla-all[aria-pressed="true"] {
+      color: var(--canvas);
+      background: var(--ink);
+    }
+
+    .sla-track {
+      display: flex;
+      min-width: 0;
+      min-height: 48px;
+      border: 1px solid var(--ink);
+    }
+
+    .sla-segment {
+      display: flex;
+      flex: var(--share) 1 0;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 96px;
+      padding: 8px 12px;
+      color: var(--ink);
+      border: 0;
+      border-right: 1px solid var(--ink);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+      text-align: left;
+      transition: filter 150ms ease, box-shadow 150ms ease;
+    }
+
+    .sla-segment:last-child { border-right: 0; }
+
+    .sla-segment strong {
+      flex: 0 0 auto;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .sla-segment[data-filter="overdue"] { background: #f49a84; }
+
+    .sla-segment[data-filter="dueSoon"] { background: var(--due); }
+
+    .sla-segment[data-filter="later"] { background: #d9ddd2; }
+
+    .sla-segment:hover { filter: brightness(.93); }
+
+    .sla-segment[aria-pressed="true"] {
+      box-shadow: inset 0 0 0 4px var(--ink);
+      filter: saturate(1.15);
+    }
 
     .filter-button {
       display: grid;
@@ -248,10 +326,6 @@
     }
 
     .filter-button[aria-pressed="true"] .filter-count { color: var(--canvas); }
-
-    .filter-button[data-filter="dueSoon"][aria-pressed="true"] .filter-count { color: var(--due); }
-
-    .filter-button[data-filter="overdue"][aria-pressed="true"] .filter-count { color: var(--overdue); }
 
     .filter-count {
       min-width: 34px;
@@ -734,6 +808,22 @@
       .workflow-filters .filter-button:nth-child(-n + 3) { border-bottom: 1px solid var(--rule); }
     }
 
+    @media (max-width: 840px) and (min-width: 721px) {
+      .entity-compare { grid-template-columns: 1fr; }
+
+      .entity,
+      .entity:last-child { padding: 10px 0; }
+
+      .compare-mark {
+        min-height: 32px;
+        border: 0;
+        border-top: 1px solid var(--rule);
+        border-bottom: 1px solid var(--rule);
+      }
+
+      .entity-value { font-size: 24px; }
+    }
+
     @media (max-width: 720px) {
       .shell {
         width: min(100% - 28px, 580px);
@@ -766,15 +856,25 @@
         border-bottom: 1px solid var(--ink);
       }
 
-      .workflow-filters,
-      .deadline-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .workflow-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
       .filter-button { border-bottom: 1px solid var(--rule); }
 
-      .workflow-filters .filter-button:nth-child(2),
-      .deadline-filters .filter-button:nth-child(2) { border-right: 0; }
+      .workflow-filters .filter-button:nth-child(2) { border-right: 0; }
 
-      .deadline-filters .filter-button:first-child { grid-column: 1 / -1; }
+      .sla-filter-set {
+        grid-template-columns: 1fr;
+        padding: 12px;
+      }
+
+      .sla-all {
+        justify-content: flex-start;
+        min-height: 40px;
+      }
+
+      .sla-all strong { margin-left: 2px; }
+
+      .sla-segment { min-width: 0; }
 
       .index-note { display: block; }
 
@@ -863,14 +963,20 @@
     }
 
     @media (max-width: 350px) {
-      .workflow-filters,
-      .deadline-filters { grid-template-columns: 1fr; }
-
-      .deadline-filters .filter-button:first-child { grid-column: auto; }
+      .workflow-filters { grid-template-columns: 1fr; }
 
       .filter-button,
-      .workflow-filters .filter-button:nth-child(2),
-      .deadline-filters .filter-button:nth-child(2) { border-right: 0; }
+      .workflow-filters .filter-button:nth-child(2) { border-right: 0; }
+
+      .sla-track { display: grid; }
+
+      .sla-segment {
+        min-height: 42px;
+        border-right: 0;
+        border-bottom: 1px solid var(--ink);
+      }
+
+      .sla-segment:last-child { border-bottom: 0; }
 
       .filter-copy strong {
         text-overflow: clip;
@@ -907,13 +1013,13 @@
       <section class="workload-index" aria-labelledby="workload-title">
         <div class="index-head">
           <h2 class="index-title" id="workload-title">Workload index</h2>
-          <p class="index-scope">Counts describe the complete five-case prototype queue, not the filtered result.</p>
+          <p class="index-scope">Five sample cases · select a count to filter the queue.</p>
         </div>
 
         <div class="filter-axis">
           <div class="axis-label" id="workflow-definition">
             <strong>Workflow state</strong>
-            <span>Mutually exclusive · who acts next</span>
+            <span>Choose one · who acts next</span>
           </div>
           <div class="filter-set workflow-filters" role="group" aria-label="Filter by workflow state" aria-describedby="workflow-definition">
             <button class="filter-button" type="button" data-axis="state" data-filter="all" aria-pressed="true">
@@ -946,27 +1052,33 @@
         <div class="filter-axis">
           <div class="axis-label" id="deadline-definition">
             <strong>SLA urgency</strong>
-            <span>Overlaps workflow · due soon = 60m</span>
+            <span>Choose one · due soon means 60m</span>
           </div>
-          <div class="filter-set deadline-filters" role="group" aria-label="Filter by SLA urgency" aria-describedby="deadline-definition">
-            <button class="filter-button" type="button" data-axis="urgency" data-filter="all" aria-pressed="true">
-              <span class="filter-count" id="count-deadline-all">5</span>
-              <span class="filter-copy"><strong>All deadlines</strong><span>No SLA filter</span></span>
+          <div class="sla-filter-set" role="group" aria-label="Filter by SLA urgency" aria-describedby="deadline-definition">
+            <button class="sla-all" type="button" data-axis="urgency" data-filter="all" aria-pressed="true">
+              <span>All deadlines</span>
+              <strong id="count-deadline-all">5</strong>
             </button>
-            <button class="filter-button" type="button" data-axis="urgency" data-filter="overdue" aria-pressed="false">
-              <span class="filter-count" id="count-overdue">2</span>
-              <span class="filter-copy"><strong>Overdue</strong><span>Deadline passed</span></span>
-            </button>
-            <button class="filter-button" type="button" data-axis="urgency" data-filter="dueSoon" aria-pressed="false">
-              <span class="filter-count" id="count-due-soon">2</span>
-              <span class="filter-copy"><strong>Due ≤60m</strong><span>Unresolved in window</span></span>
-            </button>
+            <div class="sla-track" aria-label="Current SLA distribution">
+              <button class="sla-segment" type="button" data-axis="urgency" data-filter="overdue" aria-pressed="false">
+                <span>Overdue</span>
+                <strong id="count-overdue">2</strong>
+              </button>
+              <button class="sla-segment" type="button" data-axis="urgency" data-filter="dueSoon" aria-pressed="false">
+                <span>Due within 60m</span>
+                <strong id="count-due-soon">2</strong>
+              </button>
+              <button class="sla-segment" type="button" data-axis="urgency" data-filter="later" aria-pressed="false">
+                <span>Later</span>
+                <strong id="count-later">1</strong>
+              </button>
+            </div>
           </div>
         </div>
 
         <p class="index-note">
-          <span>Workflow and SLA filters compose across axes</span>
-          <span>Counts remain base-queue totals</span>
+          <span>Choose a status and deadline together to narrow the queue</span>
+          <span>Counts always show all 5 cases</span>
         </p>
       </section>
 
@@ -1191,14 +1303,15 @@
     const urgencyLabels = {
       all: "all deadlines",
       overdue: "overdue",
-      dueSoon: "due within 60 minutes"
+      dueSoon: "due within 60 minutes",
+      later: "due later"
     };
 
     const caseList = document.querySelector("#case-list");
     const resultSummary = document.querySelector("#result-summary");
     const resultContext = document.querySelector("#result-context");
     const clearFilters = document.querySelector("#clear-filters");
-    const filterButtons = [...document.querySelectorAll(".filter-button")];
+    const filterButtons = [...document.querySelectorAll("[data-axis][data-filter]")];
     const filterStorageKey = "docket.queueFilters.v1";
     let stateFilter = "all";
     let urgencyFilter = "all";
@@ -1322,7 +1435,7 @@
       try {
         const saved = JSON.parse(sessionStorage.getItem(filterStorageKey));
         const validStates = ["all", "review", "awaiting", "ready", "approved", "rejected"];
-        const validUrgencies = ["all", "overdue", "dueSoon"];
+        const validUrgencies = ["all", "overdue", "dueSoon", "later"];
         if (saved && validStates.includes(saved.stateFilter)) stateFilter = saved.stateFilter;
         if (saved && validUrgencies.includes(saved.urgencyFilter)) urgencyFilter = saved.urgencyFilter;
       } catch {
@@ -1391,8 +1504,12 @@
     document.querySelector("#count-ready").textContent = countWhere("state", "ready");
     document.querySelector("#count-approved").textContent = countWhere("state", "approved");
     document.querySelector("#count-rejected").textContent = countWhere("state", "rejected");
-    document.querySelector("#count-overdue").textContent = countWhere("urgency", "overdue");
-    document.querySelector("#count-due-soon").textContent = countWhere("urgency", "dueSoon");
+    ["overdue", "dueSoon", "later"].forEach((urgency) => {
+      const count = countWhere("urgency", urgency);
+      const segment = document.querySelector(`[data-axis="urgency"][data-filter="${urgency}"]`);
+      document.querySelector(`#count-${urgency === "dueSoon" ? "due-soon" : urgency}`).textContent = count;
+      segment.style.setProperty("--share", count || .35);
+    });
     restoreFilters();
     renderCases();
     window.addEventListener("pageshow", (event) => {
