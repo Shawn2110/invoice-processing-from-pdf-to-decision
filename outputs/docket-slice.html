@@ -1125,6 +1125,7 @@
         match: false,
         checks: [["Identity", "pass"], ["Tax", "review"], ["Bank", "pass"], ["Screening", "pass"]],
         action: "Verify amendment or correct registration",
+        reviewHref: "evidence-transcript-slice.html?case=VEN-2026-031",
         rule: "Registered legal names must match, or a current amendment must explain the difference.",
         evidence: "Vendor form names Nova Retail Systems. GST certificate names Nova Retail Services.",
         resolves: "Current corporate-name amendment or corrected tax registration."
@@ -1153,7 +1154,7 @@
         match: false,
         checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "review"], ["Screening", "pass"]],
         action: "Request relationship evidence",
-        reviewHref: "evidence-transcript-slice.html",
+        reviewHref: "evidence-transcript-slice.html?case=VEN-2026-042",
         rule: "The vendor and beneficiary names must match, or their relationship and payment authority must be documented.",
         evidence: "Vendor form names Northstar Holdings. Bank letter names Blue River Payments LLP.",
         resolves: "Ownership record or signed payment-authority documentation."
@@ -1182,6 +1183,7 @@
         match: true,
         checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "pass"], ["Screening", "pass"]],
         action: "Review evidence and decide",
+        reviewHref: "evidence-transcript-slice.html?case=VEN-2026-044",
         rule: "All required identity, tax, bank, and screening checks must be resolved before decision.",
         evidence: "The legal name and beneficiary name align across the reviewed sources.",
         resolves: "A reviewer records approval or a reasoned exception decision."
@@ -1244,52 +1246,72 @@
       }
     ];
 
-    const decisionStorageKey = "docket.case.VEN-2026-042.v1";
+    const reviewCaseRules = {
+      "VEN-2026-031": { rule: "VND-IDENTITY-02", reviewer: "Mira Sen", waitingCheck: "Tax" },
+      "VEN-2026-042": { rule: "VND-BANK-04", reviewer: "Asha Rao", waitingCheck: "Bank" },
+      "VEN-2026-044": { rule: "VND-APPROVAL-01", reviewer: "Asha Rao", waitingCheck: "Bank" }
+    };
 
-    function applySavedDecision() {
-      try {
-        const validOutcomes = ["request", "reject", "approve"];
-        const record = JSON.parse(localStorage.getItem(decisionStorageKey) || "null");
-        const validEvent = (event) => event
-          && typeof event.id === "string"
-          && validOutcomes.includes(event.outcome)
-          && typeof event.actor === "string"
-          && typeof event.timestamp === "string"
-          && typeof event.rationale === "string"
-          && typeof event.evidenceSnapshot === "string"
-          && ["default", "uncertain", "missing", "resolved"].includes(event.scenario)
-          && event.rule === "VND-BANK-04"
-          && (event.outcome !== "approve" || event.scenario === "resolved");
-        const validRecord = record?.version === 1 && Array.isArray(record.events) && record.events.every(validEvent);
-        const latest = validRecord ? record.events.at(-1) : null;
-        if (!latest) return;
-        const item = cases.find((entry) => entry.id === "VEN-2026-042");
-        if (!item) return;
+    function applySavedDecisions() {
+      const validOutcomes = ["request", "reject", "approve"];
+      Object.entries(reviewCaseRules).forEach(([caseId, config]) => {
+        try {
+          const record = JSON.parse(localStorage.getItem(`docket.case.${caseId}.v1`) || "null");
+          const validClaim = (claim) => claim
+            && typeof claim.label === "string"
+            && typeof claim.value === "string"
+            && typeof claim.citation === "string"
+            && typeof claim.extraction === "string"
+            && typeof claim.verification === "string";
+          const validSnapshot = (snapshot) => snapshot
+            && typeof snapshot.finding === "string"
+            && validClaim(snapshot.submitted)
+            && validClaim(snapshot.evidence)
+            && snapshot.rule
+            && snapshot.rule.code === config.rule
+            && typeof snapshot.rule.version === "string"
+            && typeof snapshot.rule.text === "string"
+            && typeof snapshot.scenario === "string";
+          const validEvent = (event) => event
+            && typeof event.id === "string"
+            && validOutcomes.includes(event.outcome)
+            && typeof event.actor === "string"
+            && typeof event.timestamp === "string"
+            && typeof event.rationale === "string"
+            && validSnapshot(event.evidenceSnapshot)
+            && event.caseId === caseId
+            && ["default", "uncertain", "missing", "resolved"].includes(event.scenario)
+            && event.rule === config.rule
+            && event.evidenceSnapshot.scenario === event.scenario
+            && typeof event.followUpDeadline === "string"
+            && typeof event.followUpDeadlineLabel === "string"
+            && (event.outcome !== "request" || (event.followUpDeadline && event.followUpDeadlineLabel))
+            && (event.outcome !== "approve" || event.scenario === "resolved");
+          const validRecord = record?.version === 1 && Array.isArray(record.events) && record.events.every(validEvent);
+          const latest = validRecord ? record.events.at(-1) : null;
+          const item = cases.find((entry) => entry.id === caseId);
+          if (!latest || !item) return;
 
-        item.ownerLabel = latest.outcome === "request" ? "Next actor" : "Recorded by";
-        item.owner = latest.outcome === "request" ? "Vendor · Northstar Holdings" : "Asha Rao";
-        item.urgency = "later";
-        item.urgencyValue = latest.outcome === "request" ? "3d" : "—";
-        item.urgencyLabel = latest.outcome === "request" ? "vendor response due" : "case closed locally";
-        item.deadline = latest.outcome === "request" ? "29 Aug 2026 · 17:12 IST" : "No active SLA";
-        item.deadlineISO = latest.outcome === "request" ? "2026-08-29T17:12:00+05:30" : "";
-        item.action = latest.outcome === "request" ? "Await requested relationship evidence" : "Open the decision record";
-        item.exception = latest.outcome === "request" ? "Relationship evidence requested" : latest.outcome === "approve" ? "Submission approved" : "Submission rejected";
-        item.state = latest.outcome === "request" ? "awaiting" : latest.outcome === "approve" ? "approved" : "rejected";
-        item.stateLabel = latest.outcome === "request" ? "Awaiting vendor" : latest.outcome === "approve" ? "Approved" : "Rejected";
-        if (latest.outcome === "request") item.checks = item.checks.map(([label, state]) => [label, label === "Bank" ? "waiting" : state]);
-
-        const reorderedIds = ["VEN-2026-031", "VEN-2026-044", "VEN-2026-027", "VEN-2026-048", "VEN-2026-042"];
-        reorderedIds.forEach((id, index) => {
-          const entry = cases.find((candidate) => candidate.id === id);
-          if (entry) entry.priority = index + 1;
-        });
-      } catch {
-        // The evidence screen exposes recovery for malformed browser-local records.
-      }
+          item.ownerLabel = latest.outcome === "request" ? "Next actor" : "Recorded by";
+          item.owner = latest.outcome === "request" ? `Vendor · ${item.vendor}` : config.reviewer;
+          item.urgency = "later";
+          item.urgencyValue = latest.outcome === "request" ? "3d" : "—";
+          item.urgencyLabel = latest.outcome === "request" ? "vendor response due" : "case closed locally";
+          item.deadline = latest.outcome === "request" ? latest.followUpDeadlineLabel : "No active SLA";
+          item.deadlineISO = latest.outcome === "request" ? latest.followUpDeadline : "";
+          item.action = latest.outcome === "request" ? "Await requested evidence" : "Open the decision record";
+          item.exception = latest.outcome === "request" ? "Evidence requested" : latest.outcome === "approve" ? "Submission approved" : "Submission rejected";
+          item.state = latest.outcome === "request" ? "awaiting" : latest.outcome === "approve" ? "approved" : "rejected";
+          item.stateLabel = latest.outcome === "request" ? "Awaiting vendor" : latest.outcome === "approve" ? "Approved" : "Rejected";
+          item.priority = latest.outcome === "request" ? 80 : 90;
+          if (latest.outcome === "request") item.checks = item.checks.map(([label, state]) => [label, label === config.waitingCheck ? "waiting" : state]);
+        } catch {
+          // The evidence screen exposes recovery for malformed browser-local records.
+        }
+      });
     }
 
-    applySavedDecision();
+    applySavedDecisions();
 
     const stateLabels = {
       all: "All workflow",
@@ -1371,10 +1393,10 @@
                 <span class="action-label">Next legitimate step</span>
                 <span class="next-action">${item.action}</span>
               </span>
-              <span class="case-controls${item.reviewHref ? " has-review" : ""}">
+              <span class="case-controls${item.reviewHref && item.state !== "awaiting" ? " has-review" : ""}">
                 <button class="case-trigger" type="button" aria-expanded="false" aria-controls="details-${item.id}" aria-label="Inspect ${item.vendor} case ${item.id}" aria-describedby="summary-${item.id}" data-case-label="${item.vendor} case ${item.id}">Inspect case ↓</button>
-                ${item.reviewHref
-                  ? `<a class="open-review" href="${item.reviewHref}">${item.state === "awaiting" ? "View request" : item.state === "approved" || item.state === "rejected" ? "Open record" : "Open review"} ↗</a>`
+                ${item.reviewHref && item.state !== "awaiting"
+                  ? `<a class="open-review" href="${item.reviewHref}">${item.state === "approved" || item.state === "rejected" ? "Open record" : "Open review"} ↗</a>`
                   : ""}
               </span>
               <span class="sr-only" id="summary-${item.id}">${item.urgencyValue} ${item.urgencyLabel}. Due ${item.deadline}. ${item.exception}. ${item.ownerLabel}: ${item.owner}. Next step: ${item.action}.</span>

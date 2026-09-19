@@ -637,6 +637,15 @@
       margin: 18px 24px 22px;
     }
 
+    .source-document { display: none; }
+
+    body[data-source-kind="text"] .scan-viewer,
+    body[data-source-kind="text"] .ocr-alert,
+    body[data-source-kind="text"] .ocr-edge,
+    body[data-source-kind="text"] .ocr-state-label { display: none !important; }
+
+    body[data-source-kind="text"] .source-document { display: block; }
+
     .scan-button {
       position: relative;
       display: block;
@@ -1106,6 +1115,22 @@
       text-transform: uppercase;
     }
 
+    .empty-state {
+      display: grid;
+      min-height: 62vh;
+      place-items: center;
+      padding: 36px;
+      background: var(--paper);
+      border: 2px solid var(--ink);
+      text-align: center;
+    }
+
+    .empty-state h1 { margin: 0; font-size: 34px; }
+
+    .empty-state p { max-width: 520px; margin: 10px auto 20px; color: var(--muted); }
+
+    .empty-state a { display: inline-block; padding: 10px 14px; color: var(--paper); background: var(--ink); font-weight: 900; text-decoration: none; }
+
     .scan-dialog {
       width: min(1120px, calc(100% - 48px));
       max-height: calc(100vh - 48px);
@@ -1539,7 +1564,7 @@
     }
   </style>
 </head>
-<body data-scenario="default">
+<body data-scenario="default" data-source-kind="scan">
   <div class="cut-sheet" aria-hidden="true">
     <div class="source-field form-field"><span>Form §4.2 · source present</span></div>
     <div class="source-field bank-field">
@@ -1568,7 +1593,7 @@
         <h1 id="page-title">Evidence review</h1>
       </div>
       <p class="case-facts">
-        <span>Asha Rao</span>
+        <span id="case-owner">Asha Rao</span>
         <span class="sla" id="case-sla">18m until overdue</span>
       </p>
     </section>
@@ -1595,9 +1620,9 @@
       <div class="synopsis-body">
         <div class="synopsis-values">
           <div class="synopsis-claim">
-            <span class="synopsis-source">Vendor-submitted claim</span>
-            <strong class="synopsis-value">Northstar Holdings</strong>
-            <span class="synopsis-meta">Vendor form §4.2 · vendor attestation · date not captured</span>
+            <span class="synopsis-source" id="summary-submitted-source">Vendor-submitted claim</span>
+            <strong class="synopsis-value" id="summary-submitted-value">Northstar Holdings</strong>
+            <span class="synopsis-meta" id="summary-submitted-meta">Vendor form §4.2 · vendor attestation · date not captured</span>
           </div>
           <div class="synopsis-mark" id="conflict-mark" aria-label="does not match">≠</div>
           <div class="synopsis-claim">
@@ -1615,8 +1640,8 @@
 
     <div class="mobile-pin" aria-label="Pinned conflict summary">
       <div class="pin-claim">
-        <span>Northstar Holdings</span>
-        <small>Vendor form §4.2</small>
+        <span id="pin-submitted">Northstar Holdings</span>
+        <small id="pin-submitted-source">Vendor form §4.2</small>
       </div>
       <div class="pin-claim">
         <span id="pin-holder">Blue River Payments LLP</span>
@@ -1630,12 +1655,12 @@
           <button class="claim-trigger" type="button" data-action-noun="source" data-source-label="vendor form claim — Northstar Holdings" aria-expanded="false" aria-controls="passage-vendor" aria-label="Inspect source: vendor form claim — Northstar Holdings" aria-describedby="vendor-claim-description">
             <span class="claim-number" aria-hidden="true">01</span>
             <span class="claim-copy">
-              <span class="claim-type">Submitted legal name</span>
-              <span class="claim-value">Northstar Holdings</span>
+              <span class="claim-type" id="submitted-claim-type">Submitted legal name</span>
+              <span class="claim-value" id="submitted-claim-value">Northstar Holdings</span>
               <span class="claim-meta" id="vendor-claim-description">
-                <span>Vendor form · §4.2</span>
-                <span>Native PDF text</span>
-                <span class="confidence">Exact extraction</span>
+                <span id="submitted-citation">Vendor form · §4.2</span>
+                <span id="submitted-method">Native PDF text</span>
+                <span class="confidence" id="submitted-confidence">Exact extraction</span>
               </span>
             </span>
             <span class="expand-mark" aria-hidden="true">
@@ -1645,10 +1670,10 @@
           </button>
           <div class="passage" id="passage-vendor" hidden>
             <div class="passage-label">Exact passage</div>
-            <div class="source-sheet" data-page="FORM §4.2">
-              <p>4. BANK ACCOUNT DETAILS</p>
-              <p>Account holder / beneficiary name:<br><span class="source-highlight">Northstar Holdings</span></p>
-              <p>Bank: HDFC Bank · Account ending 8842</p>
+            <div class="source-sheet" id="submitted-source-sheet" data-page="FORM §4.2">
+              <p id="submitted-source-heading">4. BANK ACCOUNT DETAILS</p>
+              <p><span id="submitted-source-field">Account holder / beneficiary name</span>:<br><span class="source-highlight" id="submitted-source-value">Northstar Holdings</span></p>
+              <p id="submitted-source-note">Bank: HDFC Bank · Account ending 8842</p>
             </div>
           </div>
         </article>
@@ -1673,6 +1698,11 @@
           <div class="passage" id="passage-bank" hidden>
             <div class="passage-label" id="bank-passage-label">Exact passage</div>
             <div>
+              <div class="source-sheet source-document" id="secondary-source-sheet" data-page="SOURCE §1">
+                <p id="secondary-source-heading">SOURCE RECORD</p>
+                <p><span id="secondary-source-field">Registered value</span>:<br><span class="source-highlight" id="secondary-source-value">Blue River Payments LLP</span></p>
+                <p id="secondary-source-note">Source inspected by the reviewer.</p>
+              </div>
               <div class="scan-viewer">
                 <button class="scan-button" id="scan-zoom-trigger" type="button" aria-haspopup="dialog" aria-controls="scan-dialog" aria-label="Zoom original bank letter page 1 scan">
                   <img class="scan-image" src="bank-letter-scan.png" alt="Original scanned bank letter page 1. The visible sentence states that Blue River Payments LLP maintains Current Account ending 8842.">
@@ -1697,11 +1727,11 @@
       <aside class="rule-gutter" aria-label="Governing rule and missing evidence">
         <div class="rule-code">
           <span>Governing rule</span>
-          <strong>VND-BANK-04</strong>
+          <strong id="rule-code">VND-BANK-04</strong>
         </div>
         <div class="rule-copy">
-          <p>The legal name must match the beneficiary—or their relationship and payment authority must be documented.</p>
-          <span class="rule-note">A mismatch alone is not fraud or rejection.</span>
+          <p id="rule-copy">The legal name must match the beneficiary—or their relationship and payment authority must be documented.</p>
+          <span class="rule-note" id="rule-note">A mismatch alone is not fraud or rejection.</span>
         </div>
         <div class="missing-evidence">
           <span class="missing-label" id="gap-label">Needed to resolve</span>
@@ -1769,7 +1799,7 @@
     <form id="resolution-form" novalidate>
       <div class="dialog-head">
         <div>
-          <span class="register-kicker">VEN-2026-042 · browser-local transaction</span>
+          <span class="register-kicker" id="register-case-id">VEN-2026-042 · browser-local transaction</span>
           <h2 id="register-title">Resolution register</h2>
         </div>
         <button class="dialog-close" id="resolution-close" type="button">Close</button>
@@ -1800,7 +1830,7 @@
               <div id="request-fields" hidden>
                 <div class="field-group">
                   <span class="field-label">Recipient / next actor</span>
-                  <strong>Primary vendor contact · Northstar Holdings</strong>
+                  <strong id="request-recipient">Primary vendor contact · Northstar Holdings</strong>
                 </div>
                 <div class="field-group">
                   <span class="field-label">Evidence requested</span>
@@ -1855,22 +1885,22 @@
             <span class="register-kicker">Evidence snapshot</span>
             <h3 id="register-finding">Recorded legal names do not match</h3>
             <p id="register-uncertainty">Readable OCR transcription; issuer and relationship remain unverified.</p>
-            <div class="decision-comparison" aria-label="Submitted entity compared with the account holder">
+            <div class="decision-comparison" aria-label="Submitted value compared with supporting evidence">
               <div class="decision-claim">
-                <span>Submitted legal entity</span>
-                <strong>Northstar Holdings</strong>
-                <small>Vendor form §4.2</small>
+                <span id="register-submitted-label">Submitted legal entity</span>
+                <strong id="register-submitted-value">Northstar Holdings</strong>
+                <small id="register-submitted-source">Vendor form §4.2</small>
               </div>
               <div class="decision-claim">
-                <span>Account holder in evidence</span>
+                <span id="register-evidence-label">Account holder in evidence</span>
                 <strong id="register-bank-value">Blue River Payments LLP</strong>
                 <small id="register-bank-source">Bank letter p.1 · OCR legibility 96% · not identity verification</small>
               </div>
             </div>
             <div class="decision-rule">
               <span>Governing rule</span>
-              <strong>VND-BANK-04</strong>
-              <p>Relationship and payment authority must be documented.</p>
+              <strong id="register-rule-code">VND-BANK-04</strong>
+              <p id="register-rule-copy">Relationship and payment authority must be documented.</p>
             </div>
           </aside>
         </div>
@@ -1898,6 +1928,137 @@
   </dialog>
 
   <script>
+    const reviewCases = {
+      "VEN-2026-031": {
+        id: "VEN-2026-031",
+        country: "India",
+        vendor: "Nova Retail Systems Pvt Ltd",
+        owner: "Mira Sen",
+        initialStatus: "Needs review",
+        sla: "12m overdue",
+        ruleCode: "VND-IDENTITY-02",
+        ruleCopy: "The submitted legal name must match the current tax registration, or a current corporate amendment must explain the difference.",
+        ruleNote: "A name difference requires evidence; it is not, by itself, a fraud finding.",
+        submitted: {
+          label: "Submitted legal name",
+          value: "Nova Retail Systems Pvt Ltd",
+          citation: "Vendor form §2.1",
+          method: "Native PDF text",
+          confidence: "Exact extraction",
+          heading: "2. COMPANY DETAILS",
+          field: "Legal business name",
+          note: "Submitted by the vendor on 26 Aug 2026"
+        },
+        evidenceLabel: "Registered name in evidence",
+        sourceKind: "text",
+        source: {
+          type: "Registered legal name",
+          value: "Nova Retail Services Pvt Ltd",
+          citation: "GST certificate §1",
+          method: "Native PDF text",
+          confidence: "Exact extraction · registration not amended",
+          heading: "GST REGISTRATION CERTIFICATE",
+          field: "Legal name",
+          note: "Current certificate on file · effective date not supplied"
+        },
+        defaultScenario: "default",
+        scenarioLabel: "Mismatch · readable sources",
+        scenarioEditable: false,
+        copy: {
+          type: "Registered legal name",
+          value: "Nova Retail Services Pvt Ltd",
+          citation: "GST certificate §1",
+          method: "Native PDF text",
+          confidence: "Exact extraction · current source",
+          pin: "Nova Retail Services Pvt Ltd",
+          pinSource: "GST certificate §1",
+          mark: "≠",
+          markLabel: "does not match",
+          summaryStatus: "Onboarding blocked pending registration-name evidence",
+          summarySource: "Tax registration claim",
+          summaryMeta: "GST certificate §1 · current source · amendment not supplied",
+          title: "The submitted and registered legal names do not match.",
+          note: "The difference between Systems and Services requires a current amendment or corrected registration.",
+          gapLabel: "Needed to resolve",
+          gapTitle: "Verify the current registered name",
+          gapCopy: "Provide evidence that links the submitted name to the current GST registration.",
+          exampleOne: "Current corporate-name amendment",
+          exampleTwo: "Corrected GST registration certificate",
+          passageLabel: "Registration source"
+        },
+        requestItems: ["Current corporate-name amendment", "Corrected GST registration certificate", "Registrar extract showing the name change"],
+        requestMessage: "Please provide a current corporate-name amendment or corrected GST certificate linking Nova Retail Systems Pvt Ltd to Nova Retail Services Pvt Ltd.",
+        rejectReasons: ["Registered legal name was not substantiated", "Required registration evidence was not provided", "Submission was withdrawn by the vendor"]
+      },
+      "VEN-2026-042": {
+        id: "VEN-2026-042",
+        country: "India",
+        vendor: "Northstar Holdings",
+        owner: "Asha Rao",
+        initialStatus: "Needs review",
+        sla: "18m until overdue",
+        ruleCode: "VND-BANK-04",
+        ruleCopy: "The legal name must match the beneficiary—or their relationship and payment authority must be documented.",
+        ruleNote: "A mismatch alone is not fraud or rejection.",
+        submitted: { label: "Submitted legal name", value: "Northstar Holdings", citation: "Vendor form §4.2", method: "Native PDF text", confidence: "Exact extraction", heading: "4. BANK ACCOUNT DETAILS", field: "Account holder / beneficiary name", note: "Bank: HDFC Bank · Account ending 8842" },
+        evidenceLabel: "Account holder in evidence",
+        sourceKind: "scan",
+        source: { type: "Extracted account holder", value: "Blue River Payments LLP", citation: "Bank letter p.1", method: "OCR text", confidence: "96% legibility · not validation", heading: "BANK LETTER", field: "Account holder", note: "Original scanned source available" },
+        defaultScenario: "default",
+        scenarioLabel: "Mismatch · readable sources",
+        scenarioEditable: true,
+        requestItems: ["Current ownership or group-company record", "Signed payment-authority documentation", "Clearer current bank letter"],
+        requestMessage: "Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments.",
+        rejectReasons: ["Bank beneficiary relationship was not substantiated", "Required bank evidence was not provided", "Submission was withdrawn by the vendor"]
+      },
+      "VEN-2026-044": {
+        id: "VEN-2026-044",
+        country: "Singapore",
+        vendor: "Meridian Analytics Pte. Ltd.",
+        owner: "Asha Rao",
+        initialStatus: "Decision ready",
+        sla: "44m until overdue",
+        ruleCode: "VND-APPROVAL-01",
+        ruleCopy: "Identity, tax, bank, and screening checks must all be resolved before approval.",
+        ruleNote: "All required checks are resolved for this submission.",
+        submitted: { label: "Submitted legal name", value: "Meridian Analytics Pte. Ltd.", citation: "Vendor form §4.2", method: "Native PDF text", confidence: "Exact extraction", heading: "4. BANK ACCOUNT DETAILS", field: "Account holder / beneficiary name", note: "Submitted on 26 Aug 2026" },
+        evidenceLabel: "Verified account holder",
+        sourceKind: "text",
+        source: { type: "Verified account holder", value: "Meridian Analytics Pte. Ltd.", citation: "Bank letter p.1", method: "Native PDF text · human verified", confidence: "Exact extraction · source verified", heading: "BANK ACCOUNT CONFIRMATION", field: "Account holder", note: "Source and issuer reviewed · 26 Aug 2026" },
+        defaultScenario: "resolved",
+        scenarioLabel: "All required evidence resolved",
+        scenarioEditable: false,
+        copy: {
+          type: "Verified account holder",
+          value: "Meridian Analytics Pte. Ltd.",
+          citation: "Bank letter p.1",
+          method: "Native PDF text · human verified",
+          confidence: "Exact extraction · source verified",
+          pin: "Meridian Analytics Pte. Ltd.",
+          pinSource: "Bank letter p.1 · verified",
+          mark: "=",
+          markLabel: "matches",
+          summaryStatus: "Decision ready · all required checks resolved",
+          summarySource: "Verified bank claim",
+          summaryMeta: "Bank letter p.1 · issuer reviewed · exact match",
+          title: "The submitted legal name and account holder match.",
+          note: "Identity, tax, bank, and screening evidence are resolved and ready for a reviewer decision.",
+          gapLabel: "Evidence state",
+          gapTitle: "Ready for decision",
+          gapCopy: "All mandatory evidence is present and supports approval under VND-APPROVAL-01.",
+          exampleOne: "Identity and tax checks passed",
+          exampleTwo: "Bank and screening checks passed",
+          passageLabel: "Verified source"
+        },
+        requestItems: ["Updated bank confirmation", "Updated tax registration", "Additional compliance documentation"],
+        requestMessage: "Please provide the additional current evidence identified by the reviewer before this submission proceeds.",
+        rejectReasons: ["Evidence no longer supports the submission", "Required compliance evidence was withdrawn", "Submission was withdrawn by the vendor"]
+      }
+    };
+
+    const requestedCaseId = new URLSearchParams(window.location.search).get("case");
+    const invalidCase = !reviewCases[requestedCaseId];
+    const activeCase = reviewCases[requestedCaseId] || reviewCases["VEN-2026-042"];
     const workspace = document.querySelector("#workspace");
     const scenario = document.querySelector("#scenario");
     const claimButtons = [...document.querySelectorAll(".claim-trigger")];
@@ -1931,18 +2092,19 @@
     const auditNext = document.querySelector("#audit-next");
     const resetRecord = document.querySelector("#reset-record");
     const approvalInput = document.querySelector("#approve-outcome");
-    const decisionStorageKey = "docket.case.VEN-2026-042.v1";
+    const decisionStorageKey = `docket.case.${activeCase.id}.v1`;
     const zoomSteps = [1, 1.5, 2];
     let scanZoomIndex = 0;
     let decisionRecord = { version: 1, events: [] };
+    let loadedRecordSignature = null;
     let storageIssue = "";
     let commitPending = false;
 
     const outcomeContent = {
       request: {
         label: "Awaiting vendor",
-        next: "Wait for the requested relationship evidence, then reopen review.",
-        preview: "Status becomes Awaiting vendor; Northstar Holdings becomes the next actor; a simulated request and audit event are stored in this browser."
+        next: "Wait for the requested evidence, then reopen review.",
+        preview: "Status becomes Awaiting vendor; the vendor becomes the next actor; a simulated request and audit event are stored in this browser."
       },
       reject: {
         label: "Rejected",
@@ -1962,24 +2124,117 @@
       })[character]);
     }
 
+    function applyActiveCaseIdentity() {
+      document.title = `${activeCase.id} — Evidence review`;
+      document.body.dataset.case = activeCase.id;
+      document.body.dataset.sourceKind = activeCase.sourceKind;
+      document.querySelector("#case-status-line").textContent = `${activeCase.id} · ${activeCase.country.toUpperCase()} · ${activeCase.initialStatus.toUpperCase()}`;
+      document.querySelector("#case-owner").textContent = activeCase.owner;
+      document.querySelector("#case-sla").textContent = activeCase.sla;
+      document.querySelector("#register-case-id").textContent = `${activeCase.id} · browser-local transaction`;
+      document.querySelector("#request-recipient").textContent = `Primary vendor contact · ${activeCase.vendor}`;
+
+      document.querySelector("#summary-submitted-value").textContent = activeCase.submitted.value;
+      document.querySelector("#summary-submitted-meta").textContent = `${activeCase.submitted.citation} · vendor attestation`;
+      document.querySelector("#pin-submitted").textContent = activeCase.submitted.value;
+      document.querySelector("#pin-submitted-source").textContent = activeCase.submitted.citation;
+      document.querySelector("#submitted-claim-type").textContent = activeCase.submitted.label;
+      document.querySelector("#submitted-claim-value").textContent = activeCase.submitted.value;
+      document.querySelector("#submitted-citation").textContent = activeCase.submitted.citation;
+      document.querySelector("#submitted-method").textContent = activeCase.submitted.method;
+      document.querySelector("#submitted-confidence").textContent = activeCase.submitted.confidence;
+      document.querySelector("#submitted-source-heading").textContent = activeCase.submitted.heading;
+      document.querySelector("#submitted-source-field").textContent = activeCase.submitted.field;
+      document.querySelector("#submitted-source-value").textContent = activeCase.submitted.value;
+      document.querySelector("#submitted-source-note").textContent = activeCase.submitted.note;
+      document.querySelector("#submitted-source-sheet").dataset.page = activeCase.submitted.citation.toUpperCase();
+
+      document.querySelector("#secondary-source-heading").textContent = activeCase.source.heading;
+      document.querySelector("#secondary-source-field").textContent = activeCase.source.field;
+      document.querySelector("#secondary-source-value").textContent = activeCase.source.value;
+      document.querySelector("#secondary-source-note").textContent = activeCase.source.note;
+      document.querySelector("#secondary-source-sheet").dataset.page = activeCase.source.citation.toUpperCase();
+      document.querySelector("#rule-code").textContent = activeCase.ruleCode;
+      document.querySelector("#rule-copy").textContent = activeCase.ruleCopy;
+      document.querySelector("#rule-note").textContent = activeCase.ruleNote;
+
+      document.querySelector("#register-submitted-label").textContent = activeCase.submitted.label;
+      document.querySelector("#register-submitted-value").textContent = activeCase.submitted.value;
+      document.querySelector("#register-submitted-source").textContent = activeCase.submitted.citation;
+      document.querySelector("#register-evidence-label").textContent = activeCase.evidenceLabel;
+      document.querySelector("#register-rule-code").textContent = activeCase.ruleCode;
+      document.querySelector("#register-rule-copy").textContent = activeCase.ruleCopy;
+      document.querySelector(".examples").setAttribute("aria-label", "Evidence relevant to this decision");
+
+      document.querySelectorAll(".evidence-options .check-option").forEach((label, index) => {
+        const value = activeCase.requestItems[index];
+        const input = label.querySelector("input");
+        input.value = value;
+        label.replaceChildren(input, document.createTextNode(value));
+      });
+      const reasonSelect = document.querySelector("#reject-reason");
+      reasonSelect.innerHTML = `<option value="">Select a reason</option>${activeCase.rejectReasons.map((reason) => `<option>${escapeHTML(reason)}</option>`).join("")}`;
+
+      document.querySelector(".form-field > span").textContent = `${activeCase.submitted.citation} · source present`;
+      document.querySelector(".bank-field > span").textContent = `${activeCase.source.citation} · source present`;
+      claimButtons[0].dataset.sourceLabel = `${activeCase.submitted.citation} — ${activeCase.submitted.value}`;
+      claimButtons[0].setAttribute("aria-label", `Inspect source: ${activeCase.submitted.citation} — ${activeCase.submitted.value}`);
+
+      scenario.value = activeCase.defaultScenario;
+      if (!activeCase.scenarioEditable) {
+        scenario.innerHTML = `<option value="${activeCase.defaultScenario}">${escapeHTML(activeCase.scenarioLabel)}</option>`;
+        scenario.disabled = true;
+        document.querySelector('label[for="scenario"]').textContent = "Evidence state";
+      }
+    }
+
+    function validEvidenceSnapshot(snapshot) {
+      const validClaim = (claim) => claim
+        && typeof claim.label === "string"
+        && typeof claim.value === "string"
+        && typeof claim.citation === "string"
+        && typeof claim.extraction === "string"
+        && typeof claim.verification === "string";
+      return snapshot
+        && typeof snapshot.finding === "string"
+        && validClaim(snapshot.submitted)
+        && validClaim(snapshot.evidence)
+        && snapshot.rule
+        && typeof snapshot.rule.code === "string"
+        && typeof snapshot.rule.version === "string"
+        && typeof snapshot.rule.text === "string"
+        && typeof snapshot.scenario === "string";
+    }
+
+    function validDecisionEvent(event) {
+      return event
+        && typeof event.id === "string"
+        && outcomeContent[event.outcome]
+        && typeof event.priorStatus === "string"
+        && typeof event.actor === "string"
+        && typeof event.timestamp === "string"
+        && typeof event.timestampLabel === "string"
+        && typeof event.rationale === "string"
+        && typeof event.reason === "string"
+        && typeof event.communication === "string"
+        && validEvidenceSnapshot(event.evidenceSnapshot)
+        && event.caseId === activeCase.id
+        && ["default", "uncertain", "missing", "resolved"].includes(event.scenario)
+        && event.rule === activeCase.ruleCode
+        && event.evidenceSnapshot.rule.code === event.rule
+        && event.evidenceSnapshot.scenario === event.scenario
+        && typeof event.followUpDeadline === "string"
+        && typeof event.followUpDeadlineLabel === "string"
+        && (event.outcome !== "request" || (event.followUpDeadline && event.followUpDeadlineLabel))
+        && (event.outcome !== "approve" || event.scenario === "resolved");
+    }
+
     function loadDecisionRecord() {
       try {
-        const parsed = JSON.parse(localStorage.getItem(decisionStorageKey) || "null");
-        const validEvent = (event) => event
-          && typeof event.id === "string"
-          && outcomeContent[event.outcome]
-          && typeof event.priorStatus === "string"
-          && typeof event.actor === "string"
-          && typeof event.timestamp === "string"
-          && typeof event.timestampLabel === "string"
-          && typeof event.rationale === "string"
-          && typeof event.reason === "string"
-          && typeof event.communication === "string"
-          && typeof event.evidenceSnapshot === "string"
-          && ["default", "uncertain", "missing", "resolved"].includes(event.scenario)
-          && event.rule === "VND-BANK-04"
-          && (event.outcome !== "approve" || event.scenario === "resolved");
-        if (parsed && parsed.version === 1 && Array.isArray(parsed.events) && parsed.events.every(validEvent)) decisionRecord = parsed;
+        loadedRecordSignature = localStorage.getItem(decisionStorageKey);
+        const parsed = JSON.parse(loadedRecordSignature || "null");
+        if (parsed && parsed.version === 1 && Array.isArray(parsed.events) && parsed.events.every(validDecisionEvent)) decisionRecord = parsed;
+        else if (!parsed) decisionRecord = { version: 1, events: [] };
         else if (parsed) throw new Error("Unsupported local record");
       } catch {
         storageIssue = "The browser-local record could not be read. Reset it before relying on reload persistence.";
@@ -1987,15 +2242,30 @@
       }
     }
 
-    function saveDecisionRecord() {
-      try {
-        localStorage.setItem(decisionStorageKey, JSON.stringify(decisionRecord));
-        storageIssue = "";
-        return true;
-      } catch {
-        storageIssue = "This outcome is visible for this page session but could not be saved in browser-local storage.";
-        return false;
-      }
+    function withCaseLock(callback) {
+      return navigator.locks?.request
+        ? navigator.locks.request(`docket-decision-${activeCase.id}`, callback)
+        : callback();
+    }
+
+    async function saveDecisionRecord() {
+      const attemptSave = () => {
+        try {
+          if (localStorage.getItem(decisionStorageKey) !== loadedRecordSignature) {
+            storageIssue = "This case changed in another tab. The newer audit history was preserved; reload the review before recording another outcome.";
+            return "conflict";
+          }
+          const serialized = JSON.stringify(decisionRecord);
+          localStorage.setItem(decisionStorageKey, serialized);
+          loadedRecordSignature = serialized;
+          storageIssue = "";
+          return "saved";
+        } catch {
+          storageIssue = "This outcome is visible for this page session but could not be saved in browser-local storage.";
+          return "unavailable";
+        }
+      };
+      return withCaseLock(attemptSave);
     }
 
     function renderAudit() {
@@ -2009,8 +2279,8 @@
           auditNext.textContent = storageIssue;
           auditList.innerHTML = "";
         }
-        document.querySelector("#case-status-line").textContent = "VEN-2026-042 · INDIA · HUMAN REVIEW";
-        document.querySelector("#case-sla").textContent = "18m until overdue";
+        document.querySelector("#case-status-line").textContent = `${activeCase.id} · ${activeCase.country.toUpperCase()} · ${activeCase.initialStatus.toUpperCase()}`;
+        document.querySelector("#case-sla").textContent = activeCase.sla;
         prepareResolution.textContent = "Prepare resolution →";
         return;
       }
@@ -2019,7 +2289,7 @@
       auditState.dataset.outcome = current.outcome;
       auditState.textContent = content.label;
       auditNext.textContent = content.next;
-      document.querySelector("#case-status-line").textContent = `VEN-2026-042 · INDIA · ${content.label.toUpperCase()}`;
+      document.querySelector("#case-status-line").textContent = `${activeCase.id} · ${activeCase.country.toUpperCase()} · ${content.label.toUpperCase()}`;
       document.querySelector("#case-sla").textContent = current.outcome === "request" ? "Vendor response due in 3d" : "No active review SLA";
       document.querySelector(".crumb").href = "docket-slice.html";
       prepareResolution.textContent = "Revise resolution →";
@@ -2029,7 +2299,9 @@
           <div class="audit-detail">
             <strong>${escapeHTML(outcomeContent[event.outcome].label)} · prior state ${escapeHTML(event.priorStatus)}</strong>
             <p>${escapeHTML(event.reason)} · ${escapeHTML(event.rationale)}</p>
-            <p>Evidence snapshot: ${escapeHTML(event.evidenceSnapshot)} · Rule VND-BANK-04</p>
+            <p>Compared ${escapeHTML(event.evidenceSnapshot.submitted.value)} (${escapeHTML(event.evidenceSnapshot.submitted.citation)}) with ${escapeHTML(event.evidenceSnapshot.evidence.value)} (${escapeHTML(event.evidenceSnapshot.evidence.citation)}).</p>
+            <p>Extraction: ${escapeHTML(event.evidenceSnapshot.evidence.extraction)} · Verification: ${escapeHTML(event.evidenceSnapshot.evidence.verification)} · Scenario: ${escapeHTML(event.evidenceSnapshot.scenario)}</p>
+            <p>Rule ${escapeHTML(event.evidenceSnapshot.rule.code)} v${escapeHTML(event.evidenceSnapshot.rule.version)} — ${escapeHTML(event.evidenceSnapshot.rule.text)}</p>
             ${event.communication ? `<p>Communication recorded locally: ${escapeHTML(event.communication)}</p>` : ""}
           </div>
         </li>`).join("");
@@ -2044,18 +2316,28 @@
       outcomeFields.hidden = !outcome;
       requestFields.hidden = outcome !== "request";
       rejectFields.hidden = outcome !== "reject";
-      consequencePreview.textContent = outcome ? outcomeContent[outcome].preview : "Choose an outcome to see what changes.";
+      consequencePreview.textContent = !outcome
+        ? "Choose an outcome to see what changes."
+        : outcome === "request"
+          ? `Status becomes Awaiting vendor; ${activeCase.vendor} becomes the next actor; a simulated request and audit event are stored in this browser.`
+          : outcomeContent[outcome].preview;
       formError.textContent = "";
     }
 
     function updateRegisterContext() {
       const value = scenario.value;
-      const context = {
+      const context = activeCase.id === "VEN-2026-042" ? {
         default: ["Recorded legal names do not match", "The account-holder relationship is not verified.", "Bank letter p.1 · OCR legibility 96% · not identity verification", "Blue River Payments LLP", "Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments."],
         uncertain: ["Source text cannot yet support a mismatch", "The highlighted original requires human verification.", "Bank letter p.1 · OCR legibility 61% · not identity verification", "Blue River Payrnents LLP (uncertain OCR)", "Please provide a clearer current bank letter showing the complete beneficiary name so we can verify the account holder."],
         missing: ["Required bank source is unavailable", "No bank extraction or legal-name comparison has been made.", "No bank source available", "No account-holder value", "Please provide a current bank letter or account confirmation that clearly shows the beneficiary name and account ending 8842."],
         resolved: ["Beneficiary relationship is verified", "A current ownership record and signed payment authority resolve the legal-name difference.", "Relationship record · verified 26 Aug 2026", "Blue River Payments LLP · authorised beneficiary", "No additional evidence is required for this review."]
-      }[value];
+      }[value] : [
+        activeCase.copy.title,
+        activeCase.copy.note,
+        `${activeCase.source.citation} · ${activeCase.source.confidence}`,
+        activeCase.source.value,
+        activeCase.requestMessage
+      ];
       document.querySelector("#register-finding").textContent = context[0];
       document.querySelector("#register-uncertainty").textContent = context[1];
       document.querySelector("#register-bank-source").textContent = context[2];
@@ -2067,8 +2349,8 @@
         updateOutcomeFields();
       }
       document.querySelector("#approve-availability").textContent = value === "resolved"
-        ? "Available: relationship evidence and payment authority are verified."
-        : "Unavailable: the beneficiary relationship is unresolved.";
+        ? "Available: all mandatory evidence for this case is resolved."
+        : "Unavailable: mandatory evidence for this case remains unresolved.";
     }
 
     function resetResolutionForm() {
@@ -2079,7 +2361,7 @@
       formError.textContent = "";
       registerEditor.hidden = false;
       registerReceipt.hidden = true;
-      document.querySelector("#request-message").value = "Please provide a current document linking Blue River Payments LLP to Northstar Holdings and confirming its authority to receive payments.";
+      document.querySelector("#request-message").value = activeCase.requestMessage;
     }
 
     function openResolution() {
@@ -2097,7 +2379,7 @@
       const outcome = selectedOutcome();
       const rationale = resolutionForm.elements.rationale.value.trim();
       if (!outcome) return scenario.value === "resolved" ? "Choose Approve, Request information, or Reject submission." : "Choose Request information or Reject submission.";
-      if (outcome === "approve" && scenario.value !== "resolved") return "Approval is blocked until relationship evidence is verified.";
+      if (outcome === "approve" && scenario.value !== "resolved") return "Approval is blocked until mandatory evidence is resolved.";
       if (outcome === "request") {
         const requested = [...resolutionForm.querySelectorAll('input[name="requestedEvidence"]:checked')];
         if (!requested.length) return "Select at least one item of evidence to request.";
@@ -2112,7 +2394,7 @@
       return "";
     }
 
-    function commitResolution(event) {
+    async function commitResolution(event) {
       event.preventDefault();
       if (commitPending) return;
       const validationMessage = validateResolution();
@@ -2130,29 +2412,69 @@
       const communication = outcome === "request"
         ? `${evidenceItems.join("; ")}. ${resolutionForm.elements.requestMessage.value.trim()}`
         : resolutionForm.elements.rejectMessage.value.trim();
-      const evidenceSnapshot = `${document.querySelector("#register-finding").textContent}; ${document.querySelector("#register-bank-source").textContent}`;
       const now = new Date();
+      const followUp = new Date(now.getTime() + (3 * 24 * 60 * 60 * 1000));
+      const followUpDeadline = outcome === "request" ? followUp.toISOString() : "";
+      const followUpDeadlineLabel = outcome === "request"
+        ? `${new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Kolkata" }).format(followUp).replace(",", " ·")} IST`
+        : "";
+      const evidenceSnapshot = {
+        finding: document.querySelector("#register-finding").textContent,
+        submitted: {
+          label: activeCase.submitted.label,
+          value: activeCase.submitted.value,
+          citation: activeCase.submitted.citation,
+          extraction: activeCase.submitted.method,
+          verification: activeCase.submitted.confidence
+        },
+        evidence: {
+          label: activeCase.evidenceLabel,
+          value: document.querySelector("#bank-claim-value").textContent,
+          citation: document.querySelector("#bank-citation").textContent,
+          extraction: document.querySelector("#bank-method").textContent,
+          verification: document.querySelector("#bank-confidence").textContent
+        },
+        rule: {
+          code: activeCase.ruleCode,
+          version: "1.0",
+          text: activeCase.ruleCopy
+        },
+        scenario: scenario.value
+      };
       decisionRecord.events.push({
         id: `${now.getTime()}-${Math.random().toString(16).slice(2)}`,
+        caseId: activeCase.id,
         outcome,
-        priorStatus: prior ? outcomeContent[prior.outcome].label : "Needs review",
-        actor: "Asha Rao",
+        priorStatus: prior ? outcomeContent[prior.outcome].label : activeCase.initialStatus,
+        actor: activeCase.owner,
         timestamp: now.toISOString(),
         timestampLabel: new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata", timeZoneName: "short" }).format(now),
         rationale: resolutionForm.elements.rationale.value.trim(),
-        reason: outcome === "reject" ? resolutionForm.elements.rejectReason.value : "Requested supporting evidence",
+        reason: outcome === "reject" ? resolutionForm.elements.rejectReason.value : outcome === "approve" ? "Mandatory evidence resolved" : "Requested supporting evidence",
         communication,
         evidenceSnapshot,
         scenario: scenario.value,
-        rule: "VND-BANK-04"
+        rule: activeCase.ruleCode,
+        followUpDeadline,
+        followUpDeadlineLabel
       });
 
-      const persisted = saveDecisionRecord();
+      const persistResult = await saveDecisionRecord();
+      if (persistResult === "conflict") {
+        decisionRecord.events.pop();
+        loadDecisionRecord();
+        renderAudit();
+        formError.textContent = storageIssue;
+        formError.focus();
+        commitPending = false;
+        document.querySelector("#resolution-submit").disabled = false;
+        return;
+      }
       renderAudit();
       registerEditor.hidden = true;
       registerReceipt.hidden = false;
       document.querySelector("#receipt-title").textContent = `${outcomeContent[outcome].label} recorded`;
-      document.querySelector("#receipt-copy").textContent = persisted
+      document.querySelector("#receipt-copy").textContent = persistResult === "saved"
         ? `${outcomeContent[outcome].next} The audit event is stored only in this browser; no external action occurred.`
         : `${outcomeContent[outcome].next} Storage failed, so this record will not survive reload. No external action occurred.`;
       const queueStateURL = "docket-slice.html";
@@ -2201,7 +2523,7 @@
       workspace.dataset.scenario = value;
       document.body.dataset.scenario = value;
 
-      const copy = {
+      let copy = {
         default: {
           type: "Extracted account holder",
           value: "Blue River Payments LLP",
@@ -2292,6 +2614,8 @@
         }
       }[value];
 
+      if (activeCase.copy) copy = activeCase.copy;
+
       document.querySelector("#bank-claim-type").textContent = copy.type;
       document.querySelector("#bank-claim-value").textContent = copy.value;
       document.querySelector("#bank-citation").textContent = copy.citation;
@@ -2314,8 +2638,8 @@
       document.querySelector("#gap-example-two").textContent = copy.exampleTwo;
       document.querySelector("#bank-passage-label").textContent = copy.passageLabel;
       bankButton.dataset.sourceLabel = value === "missing"
-        ? "bank letter unavailable"
-        : `bank letter claim — ${copy.value}`;
+        ? `${activeCase.source.citation} unavailable`
+        : `${activeCase.source.citation} — ${copy.value}`;
       bankButton.dataset.actionNoun = value === "missing" ? "source status" : "source";
 
       if (value === "missing") {
@@ -2326,9 +2650,11 @@
         document.querySelector(".unavailable").removeAttribute("id");
       }
 
-      const sourceRequired = value === "uncertain" || value === "missing";
+      const sourceRequired = activeCase.scenarioEditable && (value === "uncertain" || value === "missing");
       setExpanded(bankButton, sourceRequired || bankWasExpanded);
-      scenarioStatus.textContent = value === "uncertain"
+      scenarioStatus.textContent = !activeCase.scenarioEditable
+        ? `${activeCase.scenarioLabel}. Decision controls follow this case's evidence state.`
+        : value === "uncertain"
         ? "Uncertain OCR selected. The bank source is open for verification."
         : value === "missing"
           ? "Missing bank source selected. No mismatch has been determined."
@@ -2358,13 +2684,31 @@
       requestAnimationFrame(() => resolutionForm.querySelector('input[name="outcome"]:not(:disabled)').focus());
     });
     resolutionDialog.addEventListener("close", () => prepareResolution.focus());
-    resetRecord.addEventListener("click", () => {
-      if (!window.confirm("Delete the complete browser-local decision history for VEN-2026-042? This cannot be undone.")) return;
-      decisionRecord = { version: 1, events: [] };
-      storageIssue = "";
-      try { localStorage.removeItem(decisionStorageKey); } catch {
-        storageIssue = "The browser-local record could not be cleared. Browser storage is unavailable.";
+    resetRecord.addEventListener("click", async () => {
+      const revisionCount = decisionRecord.events.length;
+      if (!window.confirm(`Delete ${revisionCount} browser-local decision ${revisionCount === 1 ? "event" : "events"} for ${activeCase.id}? This cannot be undone.`)) return;
+      const resetResult = await withCaseLock(() => {
+        try {
+          if (localStorage.getItem(decisionStorageKey) !== loadedRecordSignature) return "conflict";
+          localStorage.removeItem(decisionStorageKey);
+          loadedRecordSignature = null;
+          return "cleared";
+        } catch {
+          return "unavailable";
+        }
+      });
+      if (resetResult === "conflict") {
+        storageIssue = "This case changed in another tab. The newer audit history was preserved; review it before confirming a reset again.";
+        loadDecisionRecord();
+        renderAudit();
+        scenarioStatus.textContent = storageIssue;
+        prepareResolution.focus();
+        return;
       }
+      decisionRecord = { version: 1, events: [] };
+      storageIssue = resetResult === "unavailable"
+        ? "The browser-local record could not be cleared. Browser storage is unavailable."
+        : "";
       renderAudit();
       document.querySelector(".crumb").href = "docket-slice.html";
       scenarioStatus.textContent = storageIssue || "The browser-local decision history was reset.";
@@ -2397,9 +2741,25 @@
       if (event.target === scanDialog) scanDialog.close();
     });
     scanDialog.addEventListener("close", () => scanZoomTrigger.focus());
-    loadDecisionRecord();
-    renderAudit();
-    updateScanZoom(0);
+    if (invalidCase) {
+      document.title = "Case unavailable — Docket";
+      document.querySelector(".shell").innerHTML = `
+        <section class="empty-state" aria-labelledby="unavailable-title">
+          <div>
+            <h1 id="unavailable-title">Review case unavailable</h1>
+            <p>The case identifier is missing, unknown, or not eligible for reviewer action.</p>
+            <a href="docket-slice.html">Return to the attention queue</a>
+          </div>
+        </section>`;
+    } else {
+      applyActiveCaseIdentity();
+      loadDecisionRecord();
+      const restoredScenario = decisionRecord.events.at(-1)?.scenario || activeCase.defaultScenario;
+      if (activeCase.scenarioEditable) scenario.value = restoredScenario;
+      applyScenario(restoredScenario);
+      renderAudit();
+      updateScanZoom(0);
+    }
   </script>
 </body>
 </html>
