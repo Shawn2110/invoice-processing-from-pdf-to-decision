@@ -552,6 +552,7 @@
 
     .compare-mark {
       display: grid;
+      min-width: 0;
       place-items: center;
       color: var(--overdue-deep);
       border-right: 1px solid var(--rule);
@@ -561,6 +562,7 @@
       font-weight: 900;
       letter-spacing: .06em;
       line-height: 1.1;
+      overflow-wrap: anywhere;
       text-align: center;
       text-transform: uppercase;
     }
@@ -1236,7 +1238,7 @@
         sourceLabel: "Tax registration §1",
         source: "Fieldstone Foods Incorporated",
         compare: "?",
-        compareLabel: "requires clarification",
+        compareLabel: "needs evidence",
         match: false,
         checks: [["Identity", "pass"], ["Tax", "waiting"], ["Bank", "pass"], ["Screening", "pass"]],
         action: "Await corrected tax form",
