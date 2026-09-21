@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Docket — Start vendor review</title>
+  <style>
+    :root {
+      --ink: #171814;
+      --muted: #666960;
+      --line: #c9cbc3;
+      --soft: #f4f5f1;
+      --canvas: #ffffff;
+      --blue: #2457ff;
+      --blue-soft: #edf2ff;
+      --amber: #f5b938;
+      --amber-soft: #fff7df;
+      --red: #ad2f24;
+      --red-soft: #fff0ed;
+      --green: #176f4f;
+      --green-soft: #e9f7f0;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--canvas); }
+
+    body {
+      min-width: 320px;
+      margin: 0;
+      color: var(--ink);
+      background: var(--canvas);
+      font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+      font-size: 16px;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    button, input[type="file"], select { cursor: pointer; }
+
+    a { color: inherit; }
+
+    :focus-visible {
+      outline: 4px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .skip-link {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 20;
+      padding: 10px 14px;
+      color: white;
+      background: var(--ink);
+      transform: translateY(-180%);
+    }
+
+    .skip-link:focus { transform: none; }
+
+    .shell {
+      width: min(1240px, calc(100% - 48px));
+      margin: 0 auto;
+      padding: 20px 0 72px;
+    }
+
+    .masthead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      min-height: 50px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--ink);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 850;
+      letter-spacing: -.02em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      place-items: center;
+      color: white;
+      background: var(--blue);
+      border: 2px solid var(--ink);
+      font-size: 12px;
+      font-weight: 900;
+      transform: rotate(-3deg);
+    }
+
+    .masthead nav { display: flex; align-items: center; gap: 18px; }
+
+    .masthead a {
+      font-size: 12px;
+      font-weight: 800;
+      text-underline-offset: 4px;
+    }
+
+    .local-note {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 350px;
+      gap: 48px;
+      align-items: end;
+      padding: 42px 0 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-size: clamp(42px, 6vw, 76px);
+      font-weight: 850;
+      letter-spacing: -.065em;
+      line-height: .93;
+    }
+
+    .hero-copy {
+      margin: 0 0 4px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .hero-copy strong { color: var(--ink); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 330px;
+      gap: 28px;
+      padding-top: 28px;
+    }
+
+    .panel {
+      border: 1px solid var(--ink);
+      background: white;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 20px 22px;
+      color: white;
+      background: var(--ink);
+    }
+
+    .panel-head h2, .panel-head p { margin: 0; }
+
+    .panel-head h2 {
+      font-size: 24px;
+      letter-spacing: -.035em;
+    }
+
+    .panel-head p {
+      max-width: 300px;
+      color: #c8cabf;
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .submission-form {
+      padding: 24px 22px 26px;
+      counter-reset: form-section;
+    }
+
+    .test-packets {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: end;
+      padding: 16px 22px;
+      background: var(--blue-soft);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .test-packets label { min-width: 0; }
+
+    .test-packets label span {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 11px;
+      font-weight: 850;
+    }
+
+    .test-packets select { min-height: 42px; background: white; }
+
+    .secondary-action {
+      min-height: 42px;
+      padding: 9px 14px;
+      color: var(--ink);
+      background: white;
+      border: 1px solid var(--ink);
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .secondary-action:hover { color: white; background: var(--ink); }
+
+    .packet-status {
+      grid-column: 1 / -1;
+      margin: -4px 0 0;
+      color: #324b9d;
+      font-size: 10px;
+    }
+
+    .form-section {
+      position: relative;
+      padding-left: 72px;
+      counter-increment: form-section;
+    }
+
+    .form-section::before {
+      position: absolute;
+      top: -9px;
+      left: 0;
+      color: var(--blue);
+      content: "0" counter(form-section);
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: -.06em;
+      line-height: 1;
+    }
+
+    .form-section + .form-section {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+
+    .form-section + .form-section::before { top: 22px; }
+
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title h3, .section-title p { margin: 0; }
+
+    .section-title h3 {
+      font-size: 16px;
+      letter-spacing: -.02em;
+    }
+
+    .section-title p {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 17px 18px;
+    }
+
+    .field { display: block; min-width: 0; }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field > span,
+    .file-label {
+      display: block;
+      margin-bottom: 7px;
+      font-size: 12px;
+      font-weight: 850;
+    }
+
+    .field em {
+      color: var(--muted);
+      font-size: 10px;
+      font-style: normal;
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 12px;
+      color: var(--ink);
+      background: white;
+      border: 1px solid #8e9188;
+      border-radius: 0;
+    }
+
+    textarea { min-height: 84px; resize: vertical; }
+
+    input::placeholder, textarea::placeholder { color: #8b8e85; }
+
+    .file-drop {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      min-height: 84px;
+      padding: 14px;
+      background: var(--soft);
+      border: 1px dashed #85887f;
+    }
+
+    .file-drop strong, .file-drop span { display: block; }
+
+    .file-drop strong { font-size: 13px; }
+
+    .file-drop span { margin-top: 3px; color: var(--muted); font-size: 11px; }
+
+    input[type="file"] { max-width: 260px; min-height: auto; padding: 8px; background: white; }
+
+    .file-grid { display: grid; gap: 10px; }
+
+    .file-drop[data-valid="true"] { border-style: solid; border-color: var(--green); background: var(--green-soft); }
+
+    .form-error {
+      min-height: 22px;
+      margin: 16px 0 0;
+      color: var(--red);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-top: 6px;
+    }
+
+    .actions p {
+      max-width: 420px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .primary-action {
+      min-height: 50px;
+      padding: 12px 20px;
+      color: white;
+      background: var(--blue);
+      border: 2px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      font-weight: 900;
+    }
+
+    .primary-action:hover { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--ink); }
+
+    .process-card {
+      position: sticky;
+      top: 18px;
+      align-self: start;
+      padding: 20px;
+      color: white;
+      background: var(--ink);
+    }
+
+    .process-card h2 { margin: 0; font-size: 21px; letter-spacing: -.03em; }
+
+    .process-card > p { margin: 7px 0 20px; color: #c8cabf; font-size: 12px; }
+
+    .stage-list { margin: 0; padding: 0; list-style: none; counter-reset: stages; }
+
+    .stage-list li {
+      position: relative;
+      min-height: 53px;
+      padding: 0 0 17px 38px;
+      color: #d7d9d0;
+      font-size: 12px;
+      counter-increment: stages;
+    }
+
+    .stage-list li::before {
+      position: absolute;
+      top: -3px;
+      left: 0;
+      display: grid;
+      width: 25px;
+      height: 25px;
+      place-items: center;
+      color: var(--ink);
+      background: white;
+      border-radius: 50%;
+      content: counter(stages);
+      font-size: 10px;
+      font-weight: 900;
+    }
+
+    .stage-list li:not(:last-child)::after {
+      position: absolute;
+      top: 24px;
+      bottom: 0;
+      left: 12px;
+      width: 1px;
+      background: #55584f;
+      content: "";
+    }
+
+    .stage-list strong, .stage-list span { display: block; }
+
+    .stage-list strong { color: white; }
+
+    .stage-list span { margin-top: 2px; color: #9fa198; }
+
+    .scope-note {
+      margin: 4px 0 0;
+      padding-top: 16px;
+      border-top: 1px solid #4b4d47;
+      color: #b9bbb2;
+      font-size: 10px;
+    }
+
+    .recent { margin-top: 46px; }
+
+    body[data-phase="processing"] .workspace,
+    body[data-phase="decision"] .workspace,
+    body[data-phase="processing"] .recent,
+    body[data-phase="decision"] .recent { display: none; }
+
+    .run-view {
+      margin-top: 28px;
+      border: 2px solid var(--ink);
+    }
+
+    .run-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      padding: 22px 24px;
+      color: white;
+      background: var(--ink);
+    }
+
+    .run-head p, .run-head h2 { margin: 0; }
+
+    .run-kicker {
+      color: #aeb1a8;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .run-head h2 { margin-top: 5px; font-size: 30px; letter-spacing: -.04em; }
+
+    .run-state { text-align: right; }
+
+    .run-state strong, .run-state span { display: block; }
+
+    .run-state strong { font-size: 13px; }
+
+    .run-state span { margin-top: 2px; color: #b8bbb1; font-size: 10px; }
+
+    .run-body {
+      display: grid;
+      grid-template-columns: 300px minmax(0, 1fr);
+      min-height: 480px;
+    }
+
+    .live-stages {
+      padding: 22px;
+      background: var(--soft);
+      border-right: 1px solid var(--ink);
+    }
+
+    .live-stages h3 { margin: 0 0 18px; font-size: 15px; }
+
+    .live-stage-list { margin: 0; padding: 0; list-style: none; }
+
+    .live-stage {
+      position: relative;
+      padding: 0 0 19px 34px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .live-stage::before {
+      position: absolute;
+      top: 1px;
+      left: 0;
+      width: 17px;
+      height: 17px;
+      background: white;
+      border: 2px solid #9a9d94;
+      border-radius: 50%;
+      content: "";
+    }
+
+    .live-stage:not(:last-child)::after {
+      position: absolute;
+      top: 20px;
+      bottom: 2px;
+      left: 9px;
+      width: 1px;
+      background: #b9bcb3;
+      content: "";
+    }
+
+    .live-stage strong, .live-stage span { display: block; }
+
+    .live-stage strong { color: var(--ink); font-size: 12px; }
+
+    .live-stage[data-state="running"]::before { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 0 4px #dce5ff; }
+    .live-stage[data-state="pass"]::before { background: var(--green); border-color: var(--green); }
+    .live-stage[data-state="warning"]::before { background: var(--amber); border-color: #8a6207; }
+    .live-stage[data-state="fail"]::before { background: var(--red); border-color: var(--red); }
+
+    .run-output { min-width: 0; padding: 24px; }
+
+    .run-output h3 { margin: 0; font-size: 22px; letter-spacing: -.03em; }
+
+    .run-output > p { margin: 6px 0 20px; color: var(--muted); font-size: 12px; }
+
+    .finding-list { display: grid; gap: 9px; margin: 0; padding: 0; list-style: none; }
+
+    .finding {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr) 86px;
+      gap: 14px;
+      align-items: start;
+      padding: 13px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .finding-category { color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; }
+
+    .finding-copy strong, .finding-copy span { display: block; }
+
+    .finding-copy strong { font-size: 13px; }
+
+    .finding-copy span { margin-top: 3px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+
+    .finding-state {
+      justify-self: end;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .finding-state[data-state="pass"] { color: var(--green); }
+    .finding-state[data-state="warning"] { color: #7b5500; }
+    .finding-state[data-state="fail"] { color: var(--red); }
+
+    .decision-brief { display: grid; gap: 22px; }
+
+    .decision-banner { padding: 22px; border: 2px solid var(--ink); }
+    .decision-banner[data-status="approved"] { background: var(--green-soft); }
+    .decision-banner[data-status="pending"] { background: var(--amber-soft); }
+    .decision-banner[data-status="rejected"] { background: var(--red-soft); }
+
+    .decision-banner p, .decision-banner h3 { margin: 0; }
+
+    .decision-banner .decision-label { font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+
+    .decision-banner h3 { margin-top: 5px; font-size: 40px; letter-spacing: -.05em; }
+
+    .decision-banner .decision-reason { max-width: 760px; margin-top: 8px; font-size: 14px; }
+
+    .decision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+    .decision-section { padding-top: 14px; border-top: 2px solid var(--ink); }
+
+    .decision-section h4 { margin: 0 0 9px; font-size: 13px; }
+
+    .decision-section ul { margin: 0; padding-left: 18px; }
+
+    .decision-section li { margin-top: 6px; font-size: 12px; }
+
+    .message-draft {
+      grid-column: 1 / -1;
+      padding: 18px;
+      background: var(--soft);
+      border: 1px solid var(--line);
+    }
+
+    .message-draft h4, .message-draft p { margin: 0; }
+
+    .message-draft h4 { font-size: 13px; }
+
+    .message-draft p { margin-top: 7px; font-size: 12px; white-space: pre-line; }
+
+    .message-draft .secondary-action { margin-top: 14px; }
+
+    #copy-status { margin-left: 10px; color: var(--muted); font-size: 11px; font-weight: 800; }
+
+    .decision-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .decision-actions a, .decision-actions button { min-height: 44px; padding: 10px 15px; border: 1px solid var(--ink); font-weight: 850; }
+
+    .decision-actions a { display: inline-flex; align-items: center; background: white; text-decoration: none; }
+
+    .decision-actions .primary-action { min-height: 44px; padding: 10px 15px; }
+
+    .recent-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 14px;
+    }
+
+    .recent h2, .recent p { margin: 0; }
+
+    .recent h2 { font-size: 28px; letter-spacing: -.04em; }
+
+    .recent p { color: var(--muted); font-size: 12px; }
+
+    .recent a { font-weight: 850; text-underline-offset: 4px; }
+
+    .history-shell { overflow-x: auto; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); }
+
+    table { width: 100%; min-width: 760px; border-collapse: collapse; }
+
+    th, td { padding: 13px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+
+    th {
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    td { font-size: 13px; }
+
+    td strong { display: block; }
+
+    td small { color: var(--muted); }
+
+    .status { font-weight: 900; }
+
+    .status[data-status="pending"] { color: #7d5600; }
+    .status[data-status="approved"] { color: var(--green); }
+    .status[data-status="rejected"] { color: var(--red); }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; gap: 18px; }
+      .hero-copy { max-width: 650px; }
+      .workspace { grid-template-columns: 1fr; }
+      .process-card { position: static; }
+      .stage-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      .stage-list li { padding: 34px 0 0; }
+      .stage-list li::before { top: 0; }
+      .stage-list li::after { display: none; }
+      .run-body { grid-template-columns: 240px minmax(0, 1fr); }
+    }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 28px, 580px); padding-top: 14px; }
+      .masthead { align-items: flex-start; }
+      .masthead nav { display: block; text-align: right; }
+      .local-note { display: block; margin-top: 5px; }
+      .hero { padding-top: 30px; }
+      h1 { font-size: 46px; }
+      .panel-head { display: block; }
+      .panel-head p { margin-top: 6px; text-align: left; }
+      .submission-form { padding: 20px 16px 22px; }
+      .form-section { padding-left: 0; }
+      .form-section::before {
+        position: static;
+        display: inline-block;
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+      .field-grid { grid-template-columns: 1fr; }
+      .test-packets { grid-template-columns: 1fr; }
+      .test-packets .secondary-action { width: 100%; }
+      .field.full { grid-column: auto; }
+      .section-title { display: block; }
+      .section-title p { margin-top: 4px; }
+      .file-drop { grid-template-columns: 1fr; }
+      input[type="file"] { max-width: 100%; }
+      .actions { align-items: stretch; flex-direction: column; }
+      .primary-action { width: 100%; }
+      .stage-list { grid-template-columns: 1fr; }
+      .stage-list li { min-height: 42px; padding: 0 0 15px 38px; }
+      .stage-list li::before { top: -3px; }
+      .stage-list li:not(:last-child)::after { display: block; }
+      .recent-head { align-items: flex-start; flex-direction: column; }
+      .run-head { grid-template-columns: 1fr; }
+      .run-state { text-align: left; }
+      .run-body { display: block; }
+      .live-stages { border-right: 0; border-bottom: 1px solid var(--ink); }
+      .live-stage-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+      .run-output { padding: 20px 16px; }
+      .finding { grid-template-columns: 82px minmax(0, 1fr); }
+      .finding-state { grid-column: 2; justify-self: start; }
+      .decision-grid { grid-template-columns: 1fr; }
+      .message-draft { grid-column: auto; }
+      .decision-banner h3 { font-size: 34px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#submission-form">Skip to vendor submission</a>
+  <main class="shell">
+    <header class="masthead" aria-label="Product header">
+      <div class="brand"><span class="brand-mark" aria-hidden="true">D</span><span>DOCKET / VENDOR OPERATIONS</span></div>
+      <nav aria-label="Workspace navigation"><a href="docket-slice.html">Review queue</a><span class="local-note">Browser-local demo</span></nav>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">New vendor submission</p>
+        <h1 id="page-title">Start with the vendor. End with a decision.</h1>
+      </div>
+      <p class="hero-copy">Enter the submitted facts and attach the available evidence. Docket will check <strong>identity, tax, bank and compliance</strong>, then explain what happens next.</p>
+    </section>
+
+    <section class="workspace" id="workspace" aria-label="New vendor review workspace">
+      <section class="panel" aria-labelledby="submission-title">
+        <div class="panel-head">
+          <h2 id="submission-title">Vendor submission</h2>
+          <p>Required fields are marked. Nothing is sent outside this browser.</p>
+        </div>
+        <div class="test-packets">
+          <label for="test-packet"><span>Prepared demo input</span><select id="test-packet"><option value="">Choose a test packet</option><option value="brightline-approved">Happy path · all checks pass</option><option value="kestrel-bank-mismatch">Edge case · bank beneficiary mismatch</option><option value="harbor-invalid-tax">Edge case · invalid country tax ID</option><option value="solstice-expired-document">Edge case · expired tax evidence</option></select></label>
+          <button class="secondary-action" id="load-packet" type="button">Load packet</button>
+          <p class="packet-status" id="packet-status">Packets populate editable inputs and document metadata; they never choose an outcome.</p>
+        </div>
+        <form class="submission-form" id="submission-form" novalidate>
+          <section class="form-section" aria-labelledby="company-title">
+            <div class="section-title"><h3 id="company-title">Company details</h3><p>The facts supplied for onboarding</p></div>
+            <div class="field-grid">
+              <label class="field"><span>Legal company name *</span><input name="legalName" autocomplete="organization" required placeholder="e.g. Acme Logistics Pvt Ltd"></label>
+              <label class="field"><span>Country *</span><select name="country" required><option value="">Choose country</option><option value="IN">India</option><option value="SG">Singapore</option><option value="DE">Germany</option><option value="US">United States</option></select></label>
+              <label class="field"><span>Tax ID *</span><input name="taxId" required placeholder="Country-specific registration number"></label>
+              <label class="field"><span>Vendor contact email *</span><input name="email" type="email" required placeholder="finance@vendor.com"></label>
+              <label class="field full"><span>Registered name on tax evidence *</span><input name="registeredName" required placeholder="Name exactly as shown on the tax document"></label>
+              <label class="field"><span>Tax evidence expiry *</span><input name="taxExpiry" type="date" required></label>
+              <label class="field"><span>Submission reference</span><input name="reference" placeholder="Optional vendor or request ID"></label>
+            </div>
+          </section>
+
+          <section class="form-section" aria-labelledby="payment-title">
+            <div class="section-title"><h3 id="payment-title">Payment and compliance</h3><p>Reviewer-confirmed values, not OCR output</p></div>
+            <div class="field-grid">
+              <label class="field full"><span>Bank account holder *</span><input name="bankHolder" required placeholder="Beneficiary name shown by the bank"></label>
+              <label class="field"><span>Relationship evidence</span><select name="relationshipEvidence"><option value="none">Not provided</option><option value="provided">Provided and reviewer-confirmed</option></select></label>
+              <label class="field"><span>Internal screening result *</span><select name="screening" required><option value="">Choose result</option><option value="clear">No match</option><option value="review">Possible match — review required</option><option value="confirmed">Confirmed restricted-party match</option></select></label>
+            </div>
+          </section>
+
+          <section class="form-section" aria-labelledby="documents-title">
+            <div class="section-title"><h3 id="documents-title">Submission packet</h3><p>PDF evidence or one structured JSON packet</p></div>
+            <div class="file-grid">
+              <label class="file-drop" id="tax-file-drop" for="tax-file"><span><strong>Tax registration evidence *</strong><span>PDF · up to 5 MB</span></span><input id="tax-file" name="taxFile" type="file" accept=".pdf,application/pdf"></label>
+              <label class="file-drop" id="bank-file-drop" for="bank-file"><span><strong>Bank account evidence *</strong><span>PDF · up to 5 MB</span></span><input id="bank-file" name="bankFile" type="file" accept=".pdf,application/pdf"></label>
+              <label class="file-drop" id="compliance-file-drop" for="compliance-file"><span><strong>Compliance declaration *</strong><span>PDF · up to 5 MB</span></span><input id="compliance-file" name="complianceFile" type="file" accept=".pdf,application/pdf"></label>
+              <label class="file-drop" for="packet-json"><span><strong>Or import a structured packet</strong><span>JSON · populates the same editable fields</span></span><input id="packet-json" name="packetJson" type="file" accept=".json,application/json"></label>
+            </div>
+          </section>
+
+          <p class="form-error" id="form-error" role="alert" tabindex="-1"></p>
+          <div class="actions">
+            <p>This prototype validates supplied fields and uploaded file integrity. It never claims to verify a government registry or read PDF content.</p>
+            <button class="primary-action" type="submit">Run vendor checks →</button>
+          </div>
+        </form>
+      </section>
+
+      <aside class="process-card" aria-labelledby="process-title">
+        <h2 id="process-title">What this run will check</h2>
+        <p>Each stage produces a visible result before a decision is made.</p>
+        <ol class="stage-list">
+          <li><strong>Receive submission</strong><span>Required facts and files</span></li>
+          <li><strong>Check file integrity</strong><span>Type, size and PDF header only</span></li>
+          <li><strong>Validate identity</strong><span>Legal and registered names</span></li>
+          <li><strong>Check tax format</strong><span>Country-specific structure</span></li>
+          <li><strong>Check payment evidence</strong><span>Beneficiary and authority</span></li>
+          <li><strong>Generate decision</strong><span>Status, reasons and next action</span></li>
+        </ol>
+        <p class="scope-note">The demo stores submissions in this browser only. Uploaded file contents are not retained.</p>
+      </aside>
+    </section>
+
+    <section class="run-view" id="run-view" aria-labelledby="run-title" hidden>
+      <div class="run-head">
+        <div><p class="run-kicker" id="run-identity">Run</p><h2 id="run-title">Processing vendor submission</h2></div>
+        <div class="run-state" aria-live="polite"><strong id="run-state">Preparing checks</strong><span id="run-updated">Browser-local run</span></div>
+      </div>
+      <div class="run-body">
+        <aside class="live-stages" aria-labelledby="live-stages-title">
+          <h3 id="live-stages-title">Run progress</h3>
+          <ol class="live-stage-list" id="live-stage-list"></ol>
+        </aside>
+        <div class="run-output" id="run-output" tabindex="-1">
+          <div id="processing-output"><h3>Checking the submission</h3><p>Results appear here as each validation completes.</p><ul class="finding-list" id="finding-list"></ul></div>
+          <div class="decision-brief" id="decision-brief" hidden>
+            <section class="decision-banner" id="decision-banner"><p class="decision-label">Decision</p><h3 id="decision-status">Pending</h3><p class="decision-reason" id="decision-reason"></p></section>
+            <div class="decision-grid">
+              <section class="decision-section"><h4>Why this decision</h4><ul id="decision-reasons"></ul></section>
+              <section class="decision-section"><h4>What happens next</h4><ul id="decision-actions"></ul></section>
+              <section class="message-draft" id="message-draft"><h4>Vendor message draft · not sent</h4><p id="message-copy"></p><button class="secondary-action" id="copy-message" type="button">Copy draft</button><span id="copy-status" role="status"></span></section>
+            </div>
+            <div class="decision-actions"><button class="primary-action" id="new-submission" type="button">Start another submission</button><a href="docket-slice.html">Open review queue</a></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="recent" aria-labelledby="recent-title">
+      <div class="recent-head">
+        <div><p class="eyebrow">Continuity</p><h2 id="recent-title">Recent submissions</h2></div>
+        <p><a href="docket-slice.html">Open review queue →</a></p>
+      </div>
+      <div class="history-shell">
+        <table>
+          <thead><tr><th>Vendor</th><th>Status</th><th>Primary issue</th><th>Next actor</th><th>Updated</th><th>Action</th></tr></thead>
+          <tbody id="recent-runs">
+            <tr><td><strong>Meridian Analytics Pte. Ltd.</strong><small>VEN-2026-044 · Singapore</small></td><td><span class="status" data-status="approved">Decision ready</span></td><td>All required checks resolved</td><td>Asha Rao</td><td>26 Aug · 16:10</td><td><a href="evidence-transcript-slice.html?case=VEN-2026-044">Open review</a></td></tr>
+            <tr><td><strong>Northstar Holdings</strong><small>VEN-2026-042 · India</small></td><td><span class="status" data-status="pending">Needs review</span></td><td>Bank beneficiary differs</td><td>Asha Rao</td><td>26 Aug · 15:52</td><td><a href="evidence-transcript-slice.html?case=VEN-2026-042">Open review</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <script>
+    const storageKey = "docket.onboardingRuns.v1";
+    const stageDefinitions = [
+      ["submission", "Receive submission"],
+      ["documents", "Check file integrity"],
+      ["identity", "Validate identity"],
+      ["tax", "Check tax format"],
+      ["bank", "Check payment evidence"],
+      ["screening", "Apply compliance policy"],
+      ["decision", "Generate decision"]
+    ];
+    const countryNames = { IN: "India", SG: "Singapore", DE: "Germany", US: "United States" };
+    const taxRules = {
+      IN: { code: "TAX-IN-GSTIN", description: "15-character Indian GSTIN structure", pattern: /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/ },
+      SG: { code: "TAX-SG-UEN", description: "Singapore UEN structure", pattern: /^(?:[0-9]{8,9}[A-Z]|[STFG][0-9]{2}[A-Z]{2}[0-9]{4}[A-Z])$/ },
+      DE: { code: "TAX-DE-VAT", description: "German VAT ID structure", pattern: /^DE[0-9]{9}$/ },
+      US: { code: "TAX-US-EIN", description: "US EIN structure", pattern: /^[0-9]{2}-[0-9]{7}$/ }
+    };
+
+    const form = document.querySelector("#submission-form");
+    const formError = document.querySelector("#form-error");
+    const loadPacketButton = document.querySelector("#load-packet");
+    const testPacket = document.querySelector("#test-packet");
+    const packetStatus = document.querySelector("#packet-status");
+    const runView = document.querySelector("#run-view");
+    const runOutput = document.querySelector("#run-output");
+    const stageList = document.querySelector("#live-stage-list");
+    const findingList = document.querySelector("#finding-list");
+    const processingOutput = document.querySelector("#processing-output");
+    const decisionBrief = document.querySelector("#decision-brief");
+    const recentRuns = document.querySelector("#recent-runs");
+    const fileInputs = {
+      tax: document.querySelector("#tax-file"),
+      bank: document.querySelector("#bank-file"),
+      compliance: document.querySelector("#compliance-file")
+    };
+    let preparedDocuments = [];
+    let processActive = false;
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
+    }
+
+    function normalizeName(value) {
+      return value.toLowerCase().replace(/\b(pvt|private|ltd|limited|pte|gmbh|inc|incorporated|llp|llc|company|co)\b\.?/g, "").replace(/[^a-z0-9]/g, "").trim();
+    }
+
+    function getRuns() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        return Array.isArray(parsed) ? parsed.filter((run) => run && typeof run.id === "string" && run.input && Array.isArray(run.documents)) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function withRunLock(callback) {
+      return navigator.locks?.request ? navigator.locks.request("docket-onboarding-runs", callback) : callback();
+    }
+
+    async function saveRun(run) {
+      return withRunLock(() => {
+        const runs = getRuns();
+        const existingIndex = runs.findIndex((item) => item.id === run.id);
+        if (existingIndex >= 0) runs[existingIndex] = run;
+        else runs.unshift(run);
+        localStorage.setItem(storageKey, JSON.stringify(runs.slice(0, 30)));
+      });
+    }
+
+    function formValues() {
+      const values = Object.fromEntries(new FormData(form).entries());
+      delete values.taxFile;
+      delete values.bankFile;
+      delete values.complianceFile;
+      delete values.packetJson;
+      return values;
+    }
+
+    function validatePacket(packet) {
+      const required = ["legalName", "country", "taxId", "email", "registeredName", "taxExpiry", "bankHolder", "relationshipEvidence", "screening"];
+      const documentTypes = ["tax", "bank", "compliance"];
+      return packet && packet.packetVersion === 1 && required.every((key) => typeof packet[key] === "string")
+        && Array.isArray(packet.documents)
+        && packet.documents.length === documentTypes.length
+        && documentTypes.every((type) => packet.documents.filter((document) => document.type === type).length === 1)
+        && packet.documents.every((document) => documentTypes.includes(document.type)
+          && typeof document.name === "string"
+          && document.name.toLowerCase().endsWith(".pdf")
+          && Number.isInteger(document.size)
+          && document.size > 0
+          && document.size <= 5 * 1024 * 1024
+          && ["valid", "invalid"].includes(document.integrity));
+    }
+
+    function applyPacket(packet, label, trustedPreparedPacket = false) {
+      Object.entries(packet).forEach(([key, value]) => {
+        if (key === "documents" || key === "packetVersion") return;
+        const control = form.elements.namedItem(key);
+        if (control) control.value = value;
+      });
+      preparedDocuments = packet.documents.map((document) => trustedPreparedPacket
+        ? { ...document, source: "prepared demo metadata" }
+        : { ...document, integrity: "unverified", source: "imported packet metadata · unverified" });
+      Object.keys(fileInputs).forEach((type) => {
+        const drop = document.querySelector(`#${type}-file-drop`);
+        const packetDocument = preparedDocuments.find((item) => item.type === type);
+        drop.dataset.valid = String(Boolean(packetDocument));
+        const hint = drop.querySelector("span span");
+        if (packetDocument) hint.textContent = `${packetDocument.name} · ${(packetDocument.size / 1024).toFixed(0)} KB · ${packetDocument.source}`;
+      });
+      packetStatus.textContent = `${label} loaded. Edit any value before running; the decision will be recalculated from the edited submission.`;
+      formError.textContent = "";
+      form.elements.legalName.focus();
+    }
+
+    async function loadPreparedPacket() {
+      if (!testPacket.value) {
+        packetStatus.textContent = "Choose a prepared packet first.";
+        testPacket.focus();
+        return;
+      }
+      try {
+        const response = await fetch(`samples/${testPacket.value}.json`);
+        if (!response.ok) throw new Error("Packet unavailable");
+        const packet = await response.json();
+        if (!validatePacket(packet)) throw new Error("Packet shape invalid");
+        applyPacket(packet, testPacket.options[testPacket.selectedIndex].textContent, true);
+      } catch {
+        packetStatus.textContent = "This test packet could not be loaded. Choose another packet or enter the submission manually.";
+      }
+    }
+
+    async function inspectPdf(file, type) {
+      const bytes = new Uint8Array(await file.slice(0, 5).arrayBuffer());
+      const signature = String.fromCharCode(...bytes);
+      const validSize = file.size > 0 && file.size <= 5 * 1024 * 1024;
+      return { type, name: file.name, size: file.size, integrity: signature === "%PDF-" && validSize ? "valid" : "invalid", source: "uploaded PDF metadata and header" };
+    }
+
+    async function collectDocuments() {
+      const documents = [];
+      for (const [type, input] of Object.entries(fileInputs)) {
+        if (input.files[0]) documents.push(await inspectPdf(input.files[0], type));
+        else {
+          const prepared = preparedDocuments.find((document) => document.type === type);
+          if (prepared) documents.push({ ...prepared });
+        }
+      }
+      return documents;
+    }
+
+    function showFileSelection(type) {
+      const input = fileInputs[type];
+      const drop = document.querySelector(`#${type}-file-drop`);
+      const file = input.files[0];
+      if (!file) return;
+      formError.textContent = "";
+      input.removeAttribute("aria-invalid");
+      input.removeAttribute("aria-describedby");
+      preparedDocuments = preparedDocuments.filter((document) => document.type !== type);
+      drop.dataset.valid = "true";
+      drop.querySelector("span span").textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB · selected from this device`;
+    }
+
+    function validateSubmission(values, documents) {
+      const required = ["legalName", "country", "taxId", "email", "registeredName", "taxExpiry", "bankHolder", "screening"];
+      const fieldLabels = { legalName: "legal company name", country: "country", taxId: "tax ID", email: "vendor contact email", registeredName: "registered tax-evidence name", taxExpiry: "tax-evidence expiry", bankHolder: "bank account holder", screening: "internal screening result" };
+      const missingField = required.find((key) => !String(values[key] || "").trim());
+      if (missingField) return { message: `Add the ${fieldLabels[missingField]} before running the checks.`, control: form.elements.namedItem(missingField) };
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.email)) return { message: "Enter a valid vendor contact email.", control: form.elements.namedItem("email") };
+      const missingDocument = ["tax", "bank", "compliance"].find((type) => !documents.some((document) => document.type === type));
+      if (missingDocument) return { message: `Add the ${missingDocument} document before running the checks.`, control: fileInputs[missingDocument] };
+      return null;
+    }
+
+    function createRun(values, documents) {
+      const now = new Date();
+      return {
+        version: 1,
+        id: `RUN-${now.getTime().toString(36).toUpperCase()}`,
+        createdAt: now.toISOString(),
+        updatedAt: now.toISOString(),
+        phase: "processing",
+        currentStage: 0,
+        input: values,
+        documents,
+        stages: [],
+        findings: [],
+        decision: null
+      };
+    }
+
+    function addFinding(run, category, title, detail, state, rule, needed = "") {
+      run.findings.push({ category, title, detail, state, rule, needed });
+    }
+
+    function executeStage(run, stageId) {
+      const input = run.input;
+      if (stageId === "submission") {
+        addFinding(run, "Submission", "Required facts received", `${input.legalName} · ${countryNames[input.country]} · vendor contact ${input.email}`, "pass", "INTAKE-01");
+      }
+      if (stageId === "documents") {
+        const names = run.documents.map((document) => document.name.toLowerCase());
+        const duplicates = names.some((name, index) => names.indexOf(name) !== index);
+        run.documents.forEach((document) => addFinding(run, "File", document.name, `${document.type} evidence · ${(document.size / 1024).toFixed(0)} KB · ${document.source}`, document.integrity === "valid" ? "pass" : "warning", "DOC-01", document.integrity === "valid" ? "" : `Provide a readable ${document.type} PDF smaller than 5 MB.`));
+        if (duplicates) addFinding(run, "File", "Duplicate filename detected", "Two document categories use the same filename; confirm the correct files were supplied.", "warning", "DOC-02", "Upload distinct documents for each evidence category.");
+        const expiry = new Date(`${input.taxExpiry}T23:59:59`);
+        if (Number.isNaN(expiry.getTime()) || expiry < new Date()) addFinding(run, "Tax evidence", "Tax registration evidence is expired", `Submitted expiry: ${input.taxExpiry || "not supplied"}.`, "warning", "DOC-EXPIRY-01", "Provide current tax registration evidence.");
+        else addFinding(run, "Tax evidence", "Tax registration evidence is current", `Submitted expiry: ${input.taxExpiry}. This checks the supplied date, not the issuing registry.`, "pass", "DOC-EXPIRY-01");
+      }
+      if (stageId === "identity") {
+        const matches = normalizeName(input.legalName) === normalizeName(input.registeredName);
+        addFinding(run, "Identity", matches ? "Legal names align" : "Legal names differ", `${input.legalName} compared with ${input.registeredName}. Values are reviewer-confirmed; PDF content was not extracted.`, matches ? "pass" : "warning", "VND-IDENTITY-02", matches ? "" : "Provide a corrected registration or current name-change evidence.");
+      }
+      if (stageId === "tax") {
+        const rule = taxRules[input.country];
+        const valid = Boolean(rule?.pattern.test(input.taxId.toUpperCase().replace(/\s/g, "")));
+        addFinding(run, "Tax", valid ? "Tax ID format is structurally valid" : "Tax ID format conflicts with the selected country", `${input.taxId} checked against ${rule?.description || "the selected-country format"}. This is a format check, not government verification.`, valid ? "pass" : "warning", rule?.code || "TAX-FORMAT", valid ? "" : `Provide a ${countryNames[input.country]} tax ID in the expected format or correct the country.`);
+      }
+      if (stageId === "bank") {
+        const matches = normalizeName(input.legalName) === normalizeName(input.bankHolder);
+        const authorised = input.relationshipEvidence === "provided";
+        const pass = matches || authorised;
+        addFinding(run, "Payment", pass ? (matches ? "Bank beneficiary matches" : "Beneficiary relationship documented") : "Bank beneficiary relationship is unproven", `${input.bankHolder} compared with ${input.legalName}.${authorised ? " Reviewer confirmed relationship evidence is present." : " No relationship evidence was confirmed."}`, pass ? "pass" : "warning", "VND-BANK-04", pass ? "" : "Provide ownership or signed payment-authority evidence linking the beneficiary to the vendor.");
+      }
+      if (stageId === "screening") {
+        const state = input.screening === "clear" ? "pass" : input.screening === "review" ? "warning" : "fail";
+        const title = input.screening === "clear" ? "Internal screening is clear" : input.screening === "review" ? "Possible screening match needs human review" : "Required screening was not cleared";
+        addFinding(run, "Compliance", title, "This result was supplied by the reviewer; this browser demo does not query a sanctions service.", state, "CMP-SCREEN-01", state === "pass" ? "" : input.screening === "review" ? "A compliance reviewer must resolve the possible match." : "Escalate according to restricted-party policy; do not activate the vendor.");
+      }
+    }
+
+    function stageStateFor(run, startIndex) {
+      const stageFindings = run.findings.slice(startIndex);
+      if (stageFindings.some((finding) => finding.state === "fail")) return "fail";
+      if (stageFindings.some((finding) => finding.state === "warning")) return "warning";
+      return "pass";
+    }
+
+    function buildDecision(run) {
+      const failures = run.findings.filter((finding) => finding.state === "fail");
+      const warnings = run.findings.filter((finding) => finding.state === "warning");
+      const status = failures.length ? "rejected" : warnings.length ? "pending" : "approved";
+      const primary = failures[0] || warnings[0];
+      const reasons = (failures.length ? failures : warnings).map((finding) => finding.title);
+      const actions = [...new Set((failures.length ? failures : warnings).map((finding) => finding.needed).filter(Boolean))];
+      const reason = status === "approved"
+        ? "All mandatory checks passed using the submitted fields and validated file metadata."
+        : status === "rejected"
+          ? "Required restricted-party screening was not cleared. Vendor activation must stop."
+          : primary.detail;
+      const message = status === "approved"
+        ? "No vendor message is required. A reviewer may proceed with activation."
+        : status === "pending"
+          ? `Hello,\n\nWe need additional information before we can complete onboarding for ${run.input.legalName}. ${actions.join(" ")}\n\nPlease reply with the requested evidence. This draft has not been sent.`
+          : `Hello,\n\nWe cannot complete onboarding for ${run.input.legalName} because required compliance screening was not cleared. Please contact your procurement representative if the submitted information needs correction.\n\nThis draft has not been sent.`;
+      return { status, reason, reasons: reasons.length ? reasons : ["All mandatory checks passed"], actions: actions.length ? actions : ["Reviewer may approve vendor activation"], message };
+    }
+
+    function renderStages(run, runningId = "") {
+      stageList.innerHTML = stageDefinitions.map(([id, label], index) => {
+        const stored = run.stages.find((stage) => stage.id === id);
+        const state = id === runningId ? "running" : stored?.state || "queued";
+        const stateLabel = state === "running" ? "Processing" : state === "pass" ? "Passed" : state === "warning" ? "Needs attention" : state === "fail" ? "Failed" : "Queued";
+        return `<li class="live-stage" data-state="${state}"><strong>${escapeHTML(label)}</strong><span>${escapeHTML(stateLabel)}</span></li>`;
+      }).join("");
+    }
+
+    function renderFindings(run) {
+      findingList.innerHTML = run.findings.map((finding) => `<li class="finding"><span class="finding-category">${escapeHTML(finding.category)}</span><span class="finding-copy"><strong>${escapeHTML(finding.title)}</strong><span>${escapeHTML(finding.detail)} · Rule ${escapeHTML(finding.rule)}</span></span><span class="finding-state" data-state="${escapeHTML(finding.state)}">${finding.state === "pass" ? "Passed" : finding.state === "warning" ? "Attention" : "Failed"}</span></li>`).join("");
+    }
+
+    function showRun(run) {
+      document.body.dataset.phase = run.phase;
+      runView.hidden = false;
+      document.querySelector("#run-identity").textContent = `${run.id} · ${countryNames[run.input.country] || run.input.country}`;
+      document.querySelector("#run-title").textContent = run.input.legalName;
+      document.querySelector("#run-updated").textContent = `Updated ${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }).format(new Date(run.updatedAt))}`;
+      renderStages(run);
+      renderFindings(run);
+      runView.scrollIntoView({ block: "start" });
+    }
+
+    function renderDecision(run) {
+      showRun(run);
+      processingOutput.hidden = true;
+      decisionBrief.hidden = false;
+      document.querySelector("#run-state").textContent = "Decision complete";
+      const decision = run.decision;
+      const banner = document.querySelector("#decision-banner");
+      banner.dataset.status = decision.status;
+      document.querySelector("#decision-status").textContent = decision.status[0].toUpperCase() + decision.status.slice(1);
+      document.querySelector("#decision-reason").textContent = decision.reason;
+      document.querySelector("#decision-reasons").innerHTML = decision.reasons.map((reason) => `<li>${escapeHTML(reason)}</li>`).join("");
+      document.querySelector("#decision-actions").innerHTML = decision.actions.map((action) => `<li>${escapeHTML(action)}</li>`).join("");
+      document.querySelector("#message-copy").textContent = decision.message;
+      document.querySelector("#message-draft").hidden = decision.status === "approved";
+      document.title = `${run.input.legalName} — ${decision.status}`;
+      renderRecentRuns();
+      requestAnimationFrame(() => runOutput.focus());
+    }
+
+    async function processRun(run) {
+      if (processActive) return;
+      processActive = true;
+      run.phase = "processing";
+      run.stages = [];
+      run.findings = [];
+      processingOutput.hidden = false;
+      decisionBrief.hidden = true;
+      showRun(run);
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      for (const [id, label] of stageDefinitions.slice(0, -1)) {
+        document.querySelector("#run-state").textContent = label;
+        renderStages(run, id);
+        await new Promise((resolve) => setTimeout(resolve, reducedMotion ? 0 : 420));
+        const findingStart = run.findings.length;
+        executeStage(run, id);
+        const state = stageStateFor(run, findingStart);
+        run.stages.push({ id, label, state, completedAt: new Date().toISOString() });
+        run.currentStage = run.stages.length;
+        run.updatedAt = new Date().toISOString();
+        await saveRun(run);
+        renderStages(run);
+        renderFindings(run);
+      }
+      renderStages(run, "decision");
+      document.querySelector("#run-state").textContent = "Generating decision";
+      await new Promise((resolve) => setTimeout(resolve, reducedMotion ? 0 : 420));
+      run.decision = buildDecision(run);
+      run.stages.push({ id: "decision", label: "Generate decision", state: run.decision.status === "approved" ? "pass" : run.decision.status === "pending" ? "warning" : "fail", completedAt: new Date().toISOString() });
+      run.phase = "decision";
+      run.currentStage = stageDefinitions.length;
+      run.updatedAt = new Date().toISOString();
+      await saveRun(run);
+      processActive = false;
+      renderDecision(run);
+    }
+
+    function renderRecentRuns() {
+      const dynamicRows = getRuns().filter((run) => run.decision).slice(0, 5).map((run) => {
+        const problem = run.decision.reasons[0];
+        const nextActor = run.decision.status === "pending" ? `Vendor · ${run.input.legalName}` : run.decision.status === "rejected" ? "Procurement" : "Reviewer";
+        return `<tr><td><strong>${escapeHTML(run.input.legalName)}</strong><small>${escapeHTML(run.id)} · ${escapeHTML(countryNames[run.input.country] || run.input.country)}</small></td><td><span class="status" data-status="${escapeHTML(run.decision.status)}">${escapeHTML(run.decision.status[0].toUpperCase() + run.decision.status.slice(1))}</span></td><td>${escapeHTML(problem)}</td><td>${escapeHTML(nextActor)}</td><td>${escapeHTML(new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" }).format(new Date(run.updatedAt)))}</td><td><a href="vendor-onboarding.html?run=${encodeURIComponent(run.id)}">Open run</a></td></tr>`;
+      }).join("");
+      const sampleRows = `<tr><td><strong>Meridian Analytics Pte. Ltd.</strong><small>VEN-2026-044 · Singapore</small></td><td><span class="status" data-status="approved">Decision ready</span></td><td>All required checks resolved</td><td>Asha Rao</td><td>26 Aug · 16:10</td><td><a href="evidence-transcript-slice.html?case=VEN-2026-044">Open review</a></td></tr><tr><td><strong>Northstar Holdings</strong><small>VEN-2026-042 · India</small></td><td><span class="status" data-status="pending">Needs review</span></td><td>Bank beneficiary differs</td><td>Asha Rao</td><td>26 Aug · 15:52</td><td><a href="evidence-transcript-slice.html?case=VEN-2026-042">Open review</a></td></tr>`;
+      recentRuns.innerHTML = dynamicRows + sampleRows;
+    }
+
+    async function startRun(event) {
+      event.preventDefault();
+      if (processActive) return;
+      const documents = await collectDocuments();
+      const values = formValues();
+      const validationIssue = validateSubmission(values, documents);
+      if (validationIssue) {
+        formError.textContent = validationIssue.message;
+        validationIssue.control.setAttribute("aria-invalid", "true");
+        validationIssue.control.setAttribute("aria-describedby", "form-error");
+        validationIssue.control.focus();
+        return;
+      }
+      formError.textContent = "";
+      const run = createRun(values, documents);
+      await saveRun(run);
+      history.pushState({ runId: run.id }, "", `vendor-onboarding.html?run=${encodeURIComponent(run.id)}`);
+      await processRun(run);
+    }
+
+    function returnToIntake() {
+      document.body.dataset.phase = "intake";
+      runView.hidden = true;
+      form.reset();
+      form.querySelectorAll('[aria-invalid="true"]').forEach((control) => {
+        control.removeAttribute("aria-invalid");
+        control.removeAttribute("aria-describedby");
+      });
+      preparedDocuments = [];
+      document.querySelectorAll(".file-drop[data-valid]").forEach((drop) => delete drop.dataset.valid);
+      packetStatus.textContent = "Packets populate editable inputs and document metadata; they never choose an outcome.";
+      history.pushState({}, "", "vendor-onboarding.html");
+      document.title = "Docket — Start vendor review";
+      form.elements.legalName.focus();
+      window.scrollTo({ top: 0, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    }
+
+    loadPacketButton.addEventListener("click", loadPreparedPacket);
+    Object.entries(fileInputs).forEach(([type, input]) => input.addEventListener("change", () => showFileSelection(type)));
+    document.querySelector("#packet-json").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      try {
+        if (file.size > 5 * 1024 * 1024) throw new Error("File too large");
+        const packet = JSON.parse(new TextDecoder().decode(await file.arrayBuffer()));
+        if (!validatePacket(packet)) throw new Error("Invalid packet");
+        applyPacket(packet, file.name, false);
+      } catch {
+        packetStatus.textContent = "That JSON packet is unsupported or incomplete. Use a version 1 vendor packet.";
+      }
+    });
+    form.addEventListener("input", (event) => {
+      formError.textContent = "";
+      event.target.removeAttribute("aria-invalid");
+      event.target.removeAttribute("aria-describedby");
+    });
+    form.addEventListener("submit", startRun);
+    document.querySelector("#new-submission").addEventListener("click", returnToIntake);
+    document.querySelector("#copy-message").addEventListener("click", async () => {
+      const copyStatus = document.querySelector("#copy-status");
+      try {
+        await navigator.clipboard.writeText(document.querySelector("#message-copy").textContent);
+        copyStatus.textContent = "Draft copied.";
+      } catch {
+        copyStatus.textContent = "Copy was blocked by the browser. Select the draft text to copy it manually.";
+      }
+    });
+    window.addEventListener("popstate", () => window.location.reload());
+
+    renderRecentRuns();
+    const requestedRunId = new URLSearchParams(window.location.search).get("run");
+    if (requestedRunId) {
+      const restoredRun = getRuns().find((run) => run.id === requestedRunId);
+      if (restoredRun?.phase === "decision" && restoredRun.decision) renderDecision(restoredRun);
+      else if (restoredRun?.phase === "processing") processRun(restoredRun);
+      else history.replaceState({}, "", "vendor-onboarding.html");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+{
+  "packetVersion": 1,
+  "legalName": "Brightline Office Supplies Pvt Ltd",
+  "country": "IN",
+  "taxId": "27AABCB1234C1Z5",
+  "email": "finance@brightline.example",
+  "registeredName": "Brightline Office Supplies Pvt Ltd",
+  "taxExpiry": "2027-06-30",
+  "reference": "NEW-1842",
+  "bankHolder": "Brightline Office Supplies Pvt Ltd",
+  "relationshipEvidence": "none",
+  "screening": "clear",
+  "documents": [
+    {"type": "tax", "name": "brightline-gst-certificate.pdf", "size": 184220, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "bank", "name": "brightline-bank-letter.pdf", "size": 241880, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "compliance", "name": "brightline-compliance-declaration.pdf", "size": 112440, "integrity": "valid", "source": "prepared test packet"}
+  ]
+}

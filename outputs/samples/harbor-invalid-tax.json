@@ -1,0 +1,18 @@
+{
+  "packetVersion": 1,
+  "legalName": "Harbor Systems Pte. Ltd.",
+  "country": "SG",
+  "taxId": "SG-8821-INVALID",
+  "email": "finance@harbor.example",
+  "registeredName": "Harbor Systems Pte. Ltd.",
+  "taxExpiry": "2027-01-31",
+  "reference": "NEW-1844",
+  "bankHolder": "Harbor Systems Pte. Ltd.",
+  "relationshipEvidence": "none",
+  "screening": "clear",
+  "documents": [
+    {"type": "tax", "name": "harbor-uen-record.pdf", "size": 162040, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "bank", "name": "harbor-bank-letter.pdf", "size": 202100, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "compliance", "name": "harbor-compliance-declaration.pdf", "size": 105500, "integrity": "valid", "source": "prepared test packet"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "packetVersion": 1,
+  "legalName": "Solstice Components GmbH",
+  "country": "DE",
+  "taxId": "DE123456789",
+  "email": "accounts@solstice.example",
+  "registeredName": "Solstice Components GmbH",
+  "taxExpiry": "2025-12-31",
+  "reference": "NEW-1845",
+  "bankHolder": "Solstice Components GmbH",
+  "relationshipEvidence": "none",
+  "screening": "clear",
+  "documents": [
+    {"type": "tax", "name": "solstice-tax-registration-expired.pdf", "size": 173300, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "bank", "name": "solstice-bank-letter.pdf", "size": 218600, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "compliance", "name": "solstice-compliance-declaration.pdf", "size": 110240, "integrity": "valid", "source": "prepared test packet"}
+  ]
+}

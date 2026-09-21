@@ -1,0 +1,18 @@
+{
+  "packetVersion": 1,
+  "legalName": "Kestrel Mobility Pvt Ltd",
+  "country": "IN",
+  "taxId": "29AABCK4821D1ZP",
+  "email": "ap@kestrel.example",
+  "registeredName": "Kestrel Mobility Pvt Ltd",
+  "taxExpiry": "2027-03-31",
+  "reference": "NEW-1843",
+  "bankHolder": "Kestrel Group Treasury LLP",
+  "relationshipEvidence": "none",
+  "screening": "clear",
+  "documents": [
+    {"type": "tax", "name": "kestrel-gst-certificate.pdf", "size": 194200, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "bank", "name": "kestrel-bank-confirmation.pdf", "size": 221940, "integrity": "valid", "source": "prepared test packet"},
+    {"type": "compliance", "name": "kestrel-compliance-declaration.pdf", "size": 99800, "integrity": "valid", "source": "prepared test packet"}
+  ]
+}
