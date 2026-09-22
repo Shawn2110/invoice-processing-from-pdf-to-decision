@@ -339,6 +339,122 @@
 
     .file-drop[data-valid="true"] { border-style: solid; border-color: var(--green); background: var(--green-soft); }
 
+    .document-review { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; padding: 0; border: 0; }
+
+    .document-review legend { margin-bottom: 7px; color: var(--muted); font-size: 10px; font-weight: 850; }
+
+    .document-review label { display: flex; gap: 8px; align-items: center; min-width: 0; padding: 9px; border: 1px solid #bcc3d8; background: white; font-size: 10px; font-weight: 800; }
+
+    .document-review input { width: 17px; height: 17px; min-height: 17px; margin: 0; }
+
+    .extractor {
+      margin-top: 12px;
+      padding: 16px;
+      background: #eef2ff;
+      border: 1px solid var(--ink);
+    }
+
+    .extractor-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .extractor-head h4, .extractor-head p { margin: 0; }
+
+    .extractor-head h4 { font-size: 15px; }
+
+    .extractor-head p { margin-top: 4px; color: #525b75; font-size: 11px; }
+
+    .extractor-badge {
+      flex: 0 0 auto;
+      padding: 5px 7px;
+      color: white;
+      background: var(--blue);
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .extractor-steps {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      margin-top: 13px;
+      background: #b8c2df;
+      border: 1px solid #b8c2df;
+    }
+
+    .extractor-steps span { padding: 8px; background: white; font-size: 10px; font-weight: 850; }
+
+    .extractor-consent {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 9px;
+      align-items: start;
+      margin-top: 13px;
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .extractor-consent input[type="checkbox"] { width: 18px; height: 18px; min-height: 18px; margin: 0; padding: 0; }
+
+    .extractor-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+
+    .extractor-status { color: #324b9d; font-size: 10px; font-weight: 800; }
+
+    .extraction-review { margin-top: 16px; padding-top: 15px; border-top: 1px solid #aab5d4; }
+
+    .extraction-summary { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; }
+
+    .extraction-summary h4, .extraction-summary p { margin: 0; }
+
+    .extraction-summary p { color: var(--muted); font-size: 10px; }
+
+    .document-quality { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+
+    .document-quality li { padding: 9px; border: 1px solid #bcc3d8; background: #f8f9ff; font-size: 9px; }
+
+    .document-quality strong, .document-quality span { display: block; }
+
+    .document-quality span { margin-top: 4px; color: var(--muted); }
+
+    .extracted-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+
+    .extracted-field { min-width: 0; padding: 10px; background: white; border: 1px solid #bcc3d8; }
+
+    .extracted-field > span { display: block; }
+
+    .extracted-label { color: var(--muted); font-size: 9px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; }
+
+    .extracted-value { margin-top: 4px; overflow-wrap: anywhere; font-size: 12px; font-weight: 900; }
+
+    .extracted-source { margin-top: 5px; color: var(--muted); font-size: 9px; }
+
+    .extracted-review { display: flex; gap: 8px; align-items: center; margin-top: 9px; padding-top: 9px; border-top: 1px solid #d7dbea; font-size: 10px; font-weight: 850; }
+
+    .extracted-review input { width: 17px; height: 17px; min-height: 17px; margin: 0; }
+
+    .source-action { margin-top: 8px; padding: 0; border: 0; background: transparent; color: #2748a0; font: inherit; font-size: 9px; font-weight: 900; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+    .confidence {
+      display: inline-block;
+      margin-top: 7px;
+      padding: 3px 5px;
+      background: var(--green-soft);
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .confidence[data-level="review"] { background: var(--amber-soft); }
+    .confidence[data-level="low"] { color: var(--red); background: var(--red-soft); }
+
+    .extraction-warnings { margin: 10px 0 0; padding-left: 18px; color: #785000; font-size: 10px; }
+
+    .extraction-review .secondary-action { margin-top: 13px; }
+
     .form-error {
       min-height: 22px;
       margin: 16px 0 0;
@@ -702,6 +818,8 @@
       .section-title p { margin-top: 4px; }
       .file-drop { grid-template-columns: 1fr; }
       input[type="file"] { max-width: 100%; }
+      .extractor-head, .extractor-actions, .extraction-summary { align-items: flex-start; flex-direction: column; }
+      .extractor-steps, .extracted-fields, .document-review, .document-quality { grid-template-columns: 1fr; }
       .actions { align-items: stretch; flex-direction: column; }
       .primary-action { width: 100%; }
       .stage-list { grid-template-columns: 1fr; }
@@ -747,7 +865,7 @@
       <section class="panel" aria-labelledby="submission-title">
         <div class="panel-head">
           <h2 id="submission-title">Vendor submission</h2>
-          <p>Required fields are marked. Nothing is sent outside this browser.</p>
+          <p>Required fields are marked. PDFs leave the browser only after explicit extraction consent.</p>
         </div>
         <div class="test-packets">
           <label for="test-packet"><span>Prepared demo input</span><select id="test-packet"><option value="">Choose a test packet</option><option value="brightline-approved">Happy path · all checks pass</option><option value="kestrel-bank-mismatch">Edge case · bank beneficiary mismatch</option><option value="harbor-invalid-tax">Edge case · invalid country tax ID</option><option value="solstice-expired-document">Edge case · expired tax evidence</option></select></label>
@@ -769,7 +887,7 @@
           </section>
 
           <section class="form-section" aria-labelledby="payment-title">
-            <div class="section-title"><h3 id="payment-title">Payment and compliance</h3><p>Reviewer-confirmed values, not OCR output</p></div>
+            <div class="section-title"><h3 id="payment-title">Payment and compliance</h3><p>Screening remains reviewer-controlled</p></div>
             <div class="field-grid">
               <label class="field full"><span>Bank account holder *</span><input name="bankHolder" required placeholder="Beneficiary name shown by the bank"></label>
               <label class="field"><span>Relationship evidence</span><select name="relationshipEvidence"><option value="none">Not provided</option><option value="provided">Provided and reviewer-confirmed</option></select></label>
@@ -778,18 +896,32 @@
           </section>
 
           <section class="form-section" aria-labelledby="documents-title">
-            <div class="section-title"><h3 id="documents-title">Submission packet</h3><p>PDF evidence or one structured JSON packet</p></div>
+            <div class="section-title"><h3 id="documents-title">Submission packet</h3><p>PDF evidence · optional live extraction</p></div>
             <div class="file-grid">
               <label class="file-drop" id="tax-file-drop" for="tax-file"><span><strong>Tax registration evidence *</strong><span>PDF · up to 5 MB</span></span><input id="tax-file" name="taxFile" type="file" accept=".pdf,application/pdf"></label>
               <label class="file-drop" id="bank-file-drop" for="bank-file"><span><strong>Bank account evidence *</strong><span>PDF · up to 5 MB</span></span><input id="bank-file" name="bankFile" type="file" accept=".pdf,application/pdf"></label>
               <label class="file-drop" id="compliance-file-drop" for="compliance-file"><span><strong>Compliance declaration *</strong><span>PDF · up to 5 MB</span></span><input id="compliance-file" name="complianceFile" type="file" accept=".pdf,application/pdf"></label>
               <label class="file-drop" for="packet-json"><span><strong>Or import a structured packet</strong><span>JSON · populates the same editable fields</span></span><input id="packet-json" name="packetJson" type="file" accept=".json,application/json"></label>
             </div>
+            <fieldset class="document-review"><legend>Reviewer attestation · required for approval</legend><label><input type="checkbox" data-document-review="tax"><span>I opened and reviewed the tax PDF</span></label><label><input type="checkbox" data-document-review="bank"><span>I opened and reviewed the bank PDF</span></label><label><input type="checkbox" data-document-review="compliance"><span>I opened and reviewed the compliance PDF</span></label></fieldset>
+            <section class="extractor" aria-labelledby="extractor-title">
+              <div class="extractor-head"><div><h4 id="extractor-title">Extract fields from the selected PDFs</h4><p>Text and page vision produce a reviewable draft. Maximum 2.5 MB combined; they never make the decision.</p></div><span class="extractor-badge">Human review required</span></div>
+              <div class="extractor-steps" aria-label="Extraction method"><span>1 · PDF text</span><span>2 · Page vision</span><span>3 · Structured fields</span></div>
+              <label class="extractor-consent"><input id="extraction-consent" type="checkbox"><span>I understand the three selected PDFs will be sent to the configured AI provider for extraction. Docket requests no response storage.</span></label>
+              <div class="extractor-actions"><button class="secondary-action" id="extract-documents" type="button">Extract fields</button><span class="extractor-status" id="extractor-status" role="status">Select three PDFs to begin.</span></div>
+              <div class="extraction-review" id="extraction-review" tabindex="-1" hidden>
+                <div class="extraction-summary"><h4>Review extracted values</h4><p id="extraction-summary"></p></div>
+                <ul class="document-quality" id="document-quality" aria-label="Document extraction quality"></ul>
+                <div class="extracted-fields" id="extracted-fields"></div>
+                <ul class="extraction-warnings" id="extraction-warnings"></ul>
+                <button class="secondary-action" id="apply-extraction" type="button">Apply selected values</button>
+              </div>
+            </section>
           </section>
 
           <p class="form-error" id="form-error" role="alert" tabindex="-1"></p>
           <div class="actions">
-            <p>This prototype validates supplied fields and uploaded file integrity. It never claims to verify a government registry or read PDF content.</p>
+            <p>Decision rules use reviewer-confirmed fields. Live extraction reads PDFs but does not verify government registries or run sanctions screening.</p>
             <button class="primary-action" type="submit">Run vendor checks →</button>
           </div>
         </form>
@@ -800,13 +932,13 @@
         <p>Each stage produces a visible result before a decision is made.</p>
         <ol class="stage-list">
           <li><strong>Receive submission</strong><span>Required facts and files</span></li>
-          <li><strong>Check file integrity</strong><span>Type, size and PDF header only</span></li>
+          <li><strong>Check file integrity</strong><span>Type, size and lightweight PDF structure</span></li>
           <li><strong>Validate identity</strong><span>Legal and registered names</span></li>
           <li><strong>Check tax format</strong><span>Country-specific structure</span></li>
           <li><strong>Check payment evidence</strong><span>Beneficiary and authority</span></li>
           <li><strong>Generate decision</strong><span>Status, reasons and next action</span></li>
         </ol>
-        <p class="scope-note">The demo stores submissions in this browser only. Uploaded file contents are not retained.</p>
+        <p class="scope-note">Runs are stored in this browser. Live extraction sends PDFs only after consent; Docket does not retain their contents.</p>
       </aside>
     </section>
 
@@ -882,13 +1014,23 @@
     const processingOutput = document.querySelector("#processing-output");
     const decisionBrief = document.querySelector("#decision-brief");
     const recentRuns = document.querySelector("#recent-runs");
+    const extractButton = document.querySelector("#extract-documents");
+    const extractorStatus = document.querySelector("#extractor-status");
+    const extractionReview = document.querySelector("#extraction-review");
+    const extractedFields = document.querySelector("#extracted-fields");
+    const documentQuality = document.querySelector("#document-quality");
+    const extractionWarnings = document.querySelector("#extraction-warnings");
+    const extractionFieldNames = ["legalName", "country", "taxId", "email", "registeredName", "taxExpiry", "bankHolder", "relationshipEvidence"];
+    const extractionFieldLabels = { legalName: "Legal company name", country: "Country", taxId: "Tax ID", email: "Vendor email", registeredName: "Registered tax name", taxExpiry: "Tax evidence expiry", bankHolder: "Bank account holder", relationshipEvidence: "Relationship evidence" };
     const fileInputs = {
       tax: document.querySelector("#tax-file"),
       bank: document.querySelector("#bank-file"),
       compliance: document.querySelector("#compliance-file")
     };
+    const documentReviewControls = Object.fromEntries([...document.querySelectorAll("[data-document-review]")].map((control) => [control.dataset.documentReview, control]));
     let preparedDocuments = [];
     let processActive = false;
+    let extractionState = null;
 
     function escapeHTML(value) {
       return String(value ?? "").replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
@@ -896,6 +1038,146 @@
 
     function normalizeName(value) {
       return value.toLowerCase().replace(/\b(pvt|private|ltd|limited|pte|gmbh|inc|incorporated|llp|llc|company|co)\b\.?/g, "").replace(/[^a-z0-9]/g, "").trim();
+    }
+
+    function validExtraction(payload) {
+      const knownSources = new Set(Object.entries(fileInputs).filter(([, input]) => input.files[0]).map(([type, input]) => `${type}__${input.files[0].name}`));
+      const fieldValid = (field) => {
+        if (!field || typeof field.value !== "string" || typeof field.confidence !== "number" || field.confidence < 0 || field.confidence > 1 || typeof field.sourceFile !== "string" || !Number.isInteger(field.page) || field.page < 0 || typeof field.evidence !== "string") return false;
+        if (field.value.trim()) return knownSources.has(field.sourceFile) && field.page >= 1 && field.evidence.trim().length > 0;
+        return field.sourceFile === "" && field.page === 0 && field.evidence === "";
+      };
+      return payload
+        && payload.extraction
+        && payload.extraction.fields
+        && extractionFieldNames.every((name) => fieldValid(payload.extraction.fields[name]))
+        && Array.isArray(payload.extraction.documents)
+        && Array.isArray(payload.extraction.warnings)
+        && typeof payload.extraction.overallConfidence === "number"
+        && payload.trace
+        && typeof payload.trace.model === "string"
+        && typeof payload.trace.processedAt === "string";
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+        reader.onerror = () => reject(new Error("File read failed"));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function confidenceLevel(value) {
+      if (value >= .85) return ["high", "High confidence"];
+      if (value >= .65) return ["review", "Review suggested"];
+      return ["low", "Low confidence"];
+    }
+
+    function renderExtraction() {
+      const { extraction, trace } = extractionState;
+      extractedFields.innerHTML = extractionFieldNames.map((name) => {
+        const field = extraction.fields[name];
+        const [level, label] = confidenceLevel(field.confidence);
+        const shownValue = field.value || "Not found";
+        const sourceName = field.sourceFile.replace(/^(tax|bank|compliance)__/, "");
+        const source = sourceName ? `${sourceName}${field.page ? ` · p.${field.page}` : ""}` : "No source located";
+        const sourceType = field.sourceFile.split("__")[0];
+        const hasProvenance = Boolean(field.value && field.sourceFile && field.page >= 1 && field.evidence.trim());
+        const canOpen = Boolean(hasProvenance && fileInputs[sourceType]?.files[0]);
+        return `<article class="extracted-field"><span class="extracted-label">${escapeHTML(extractionFieldLabels[name])}</span><span class="extracted-value">${escapeHTML(shownValue)}</span><span class="extracted-source">${escapeHTML(source)}${field.evidence ? ` · “${escapeHTML(field.evidence)}”` : ""}</span><span class="confidence" data-level="${level}">Model confidence: ${label.toLowerCase()} · not verification</span>${canOpen ? `<button class="source-action" type="button" aria-label="Open cited PDF page for ${escapeHTML(extractionFieldLabels[name])}" data-source-type="${escapeHTML(sourceType)}" data-source-page="${field.page}">Open cited PDF page</button>` : ""}<label class="extracted-review"><input type="checkbox" data-extraction-field="${escapeHTML(name)}" ${hasProvenance ? "" : "disabled"}><span>${hasProvenance ? "Apply this suggestion" : "No cited value to apply"}</span></label></article>`;
+      }).join("");
+      extractionWarnings.innerHTML = extraction.warnings.map((warning) => `<li>${escapeHTML(warning)}</li>`).join("");
+      extractionWarnings.hidden = extraction.warnings.length === 0;
+      documentQuality.innerHTML = extraction.documents.map((document) => `<li><strong>${escapeHTML(document.filename.replace(/^(tax|bank|compliance)__/, ""))}</strong><span>${escapeHTML(document.type)} · ${document.scanLike ? "scan-like" : "embedded text detected"} · model legibility ${document.legibility >= .85 ? "high" : document.legibility >= .65 ? "review suggested" : "low"}</span><span>${escapeHTML(document.observation)}</span></li>`).join("");
+      document.querySelector("#extraction-summary").textContent = `${extractionFieldNames.filter((name) => extraction.fields[name].value).length} fields suggested · ${trace.method} · human acceptance required`;
+      extractionReview.hidden = false;
+    }
+
+    async function extractDocuments() {
+      const consent = document.querySelector("#extraction-consent");
+      if (!consent.checked) {
+        extractorStatus.textContent = "Confirm PDF processing consent first.";
+        consent.focus();
+        return;
+      }
+      const selected = Object.entries(fileInputs).map(([type, input]) => ({ type, file: input.files[0] }));
+      const missing = selected.find((item) => !item.file);
+      if (missing) {
+        extractorStatus.textContent = `Select the ${missing.type} PDF from this device first. Prepared metadata cannot be extracted.`;
+        fileInputs[missing.type].focus();
+        return;
+      }
+      const totalBytes = selected.reduce((sum, item) => sum + item.file.size, 0);
+      if (totalBytes > 2_500_000) {
+        extractorStatus.textContent = "The three PDFs must be 2.5 MB or less in total for live extraction.";
+        return;
+      }
+      const inspections = await Promise.all(selected.map((item) => inspectPdf(item.file, item.type)));
+      if (inspections.some((document) => document.integrity !== "valid")) {
+        extractorStatus.textContent = "Each selected file must have a valid PDF header and be smaller than 5 MB.";
+        return;
+      }
+
+      extractButton.disabled = true;
+      extractionReview.hidden = true;
+      extractorStatus.textContent = "Sending PDFs securely · awaiting text and page-vision extraction…";
+      document.querySelector(".extractor").setAttribute("aria-busy", "true");
+      try {
+        const files = await Promise.all(selected.map(async ({ type, file }) => ({ type, name: file.name, data: await fileToBase64(file) })));
+        const response = await fetch("/api/extract-vendor", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ files })
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(payload.error || "The documents could not be extracted.");
+        if (!validExtraction(payload)) throw new Error("The extraction response was incomplete.");
+        extractionState = { ...payload, applied: false, appliedFields: new Set(), editedFields: new Set(), reviewedAt: "" };
+        renderExtraction();
+        extractorStatus.textContent = "Extraction complete. Review every value before applying it.";
+        extractionReview.focus?.();
+      } catch (error) {
+        extractionState = null;
+        extractorStatus.textContent = error.message || "The documents could not be extracted.";
+      } finally {
+        extractButton.disabled = false;
+        document.querySelector(".extractor").removeAttribute("aria-busy");
+      }
+    }
+
+    function applyExtraction() {
+      if (!extractionState) return;
+      const fields = extractionState.extraction.fields;
+      const selected = [...extractedFields.querySelectorAll("[data-extraction-field]:checked")].map((control) => control.dataset.extractionField);
+      if (!selected.length) {
+        extractorStatus.textContent = "Select at least one reviewed suggestion to apply.";
+        extractedFields.querySelector("[data-extraction-field]:not(:disabled)")?.focus();
+        return;
+      }
+      selected.forEach((name) => {
+        const value = fields[name].value.trim();
+        if (!value) return;
+        const control = form.elements.namedItem(name);
+        if (!control) return;
+        if (name === "country" && !["IN", "SG", "DE", "US"].includes(value)) return;
+        if (name === "relationshipEvidence" && !["provided", "none"].includes(value)) return;
+        control.value = value;
+        extractionState.appliedFields.add(name);
+      });
+      extractionState.applied = true;
+      extractionState.reviewedAt = new Date().toISOString();
+      extractorStatus.textContent = `${extractionState.appliedFields.size} reviewed suggestion${extractionState.appliedFields.size === 1 ? "" : "s"} applied. Review or edit the form, then run vendor checks.`;
+      form.elements.legalName.focus();
+    }
+
+    function clearExtraction(message = "Select three PDFs to begin.") {
+      extractionState = null;
+      extractionReview.hidden = true;
+      extractedFields.innerHTML = "";
+      documentQuality.innerHTML = "";
+      extractionWarnings.innerHTML = "";
+      extractorStatus.textContent = message;
     }
 
     function getRuns() {
@@ -912,13 +1194,19 @@
     }
 
     async function saveRun(run) {
-      return withRunLock(() => {
-        const runs = getRuns();
-        const existingIndex = runs.findIndex((item) => item.id === run.id);
-        if (existingIndex >= 0) runs[existingIndex] = run;
-        else runs.unshift(run);
-        localStorage.setItem(storageKey, JSON.stringify(runs.slice(0, 30)));
-      });
+      try {
+        return await withRunLock(() => {
+          const runs = getRuns();
+          const existingIndex = runs.findIndex((item) => item.id === run.id);
+          if (existingIndex >= 0) runs[existingIndex] = run;
+          else runs.unshift(run);
+          localStorage.setItem(storageKey, JSON.stringify(runs.slice(0, 30)));
+        });
+      } catch (cause) {
+        const error = new Error("Browser-local persistence failed", { cause });
+        error.name = "PersistenceError";
+        throw error;
+      }
     }
 
     function formValues() {
@@ -947,6 +1235,8 @@
     }
 
     function applyPacket(packet, label, trustedPreparedPacket = false) {
+      clearExtraction("Prepared packets use declared metadata. Select three PDFs for live extraction.");
+      Object.values(documentReviewControls).forEach((control) => { control.checked = false; });
       Object.entries(packet).forEach(([key, value]) => {
         if (key === "documents" || key === "packetVersion") return;
         const control = form.elements.namedItem(key);
@@ -962,7 +1252,7 @@
         const hint = drop.querySelector("span span");
         if (packetDocument) hint.textContent = `${packetDocument.name} · ${(packetDocument.size / 1024).toFixed(0)} KB · ${packetDocument.source}`;
       });
-      packetStatus.textContent = `${label} loaded. Edit any value before running; the decision will be recalculated from the edited submission.`;
+      packetStatus.textContent = `${label} loaded. Edit any value and record all three document reviews; the decision will be recalculated from the edited submission.`;
       formError.textContent = "";
       form.elements.legalName.focus();
     }
@@ -985,10 +1275,16 @@
     }
 
     async function inspectPdf(file, type) {
-      const bytes = new Uint8Array(await file.slice(0, 5).arrayBuffer());
-      const signature = String.fromCharCode(...bytes);
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const header = new TextDecoder("ascii").decode(bytes.slice(0, 8));
+      const text = new TextDecoder("latin1").decode(bytes);
       const validSize = file.size > 0 && file.size <= 5 * 1024 * 1024;
-      return { type, name: file.name, size: file.size, integrity: signature === "%PDF-" && validSize ? "valid" : "invalid", source: "uploaded PDF metadata and header" };
+      const supportedHeader = /^%PDF-1\.[0-7]/.test(header);
+      const complete = text.slice(-4096).includes("%%EOF");
+      const unlocked = !/\/Encrypt\b/.test(text);
+      const integrity = validSize && bytes.length >= 32 && supportedHeader && complete && unlocked ? "valid" : "invalid";
+      const issue = !validSize ? "outside the 5 MB file limit" : !supportedHeader ? "unsupported PDF header" : !complete ? "incomplete PDF structure" : !unlocked ? "password-protected PDF" : "";
+      return { type, name: file.name, size: file.size, integrity, issue, reviewed: Boolean(documentReviewControls[type]?.checked), source: "uploaded PDF · lightweight structural preflight" };
     }
 
     async function collectDocuments() {
@@ -997,23 +1293,27 @@
         if (input.files[0]) documents.push(await inspectPdf(input.files[0], type));
         else {
           const prepared = preparedDocuments.find((document) => document.type === type);
-          if (prepared) documents.push({ ...prepared });
+          if (prepared) documents.push({ ...prepared, reviewed: Boolean(documentReviewControls[type]?.checked) });
         }
       }
       return documents;
     }
 
-    function showFileSelection(type) {
+    async function showFileSelection(type) {
       const input = fileInputs[type];
       const drop = document.querySelector(`#${type}-file-drop`);
       const file = input.files[0];
       if (!file) return;
+      clearExtraction("Files changed. Extract again when all three PDFs are selected.");
       formError.textContent = "";
       input.removeAttribute("aria-invalid");
       input.removeAttribute("aria-describedby");
       preparedDocuments = preparedDocuments.filter((document) => document.type !== type);
-      drop.dataset.valid = "true";
-      drop.querySelector("span span").textContent = `${file.name} · ${(file.size / 1024).toFixed(0)} KB · selected from this device`;
+      documentReviewControls[type].checked = false;
+      const inspection = await inspectPdf(file, type);
+      drop.dataset.valid = String(inspection.integrity === "valid");
+      drop.querySelector("span span").textContent = inspection.integrity === "valid" ? `${file.name} · ${(file.size / 1024).toFixed(0)} KB · structural preflight passed` : `${file.name} · ${inspection.issue || "unsupported PDF"}`;
+      if (Object.values(fileInputs).every((fileInput) => fileInput.files[0])) extractorStatus.textContent = "Three PDFs selected. Confirm consent to extract fields.";
     }
 
     function validateSubmission(values, documents) {
@@ -1038,6 +1338,15 @@
         currentStage: 0,
         input: values,
         documents,
+        extraction: extractionState?.applied ? {
+          trace: extractionState.trace,
+          fields: extractionState.extraction.fields,
+          overallConfidence: extractionState.extraction.overallConfidence,
+          warnings: extractionState.extraction.warnings,
+          appliedFields: [...extractionState.appliedFields],
+          editedFields: [...extractionState.editedFields],
+          reviewedAt: extractionState.reviewedAt
+        } : null,
         stages: [],
         findings: [],
         decision: null
@@ -1052,11 +1361,18 @@
       const input = run.input;
       if (stageId === "submission") {
         addFinding(run, "Submission", "Required facts received", `${input.legalName} · ${countryNames[input.country]} · vendor contact ${input.email}`, "pass", "INTAKE-01");
+        if (run.extraction) {
+          const edits = run.extraction.editedFields.length ? ` Reviewer changed: ${run.extraction.editedFields.join(", ")}.` : " No extracted values were edited after application.";
+          addFinding(run, "Extraction", "Selected AI suggestions were reviewed", `${run.extraction.appliedFields?.length || 0} fields accepted from ${run.extraction.trace.method}; model confidence was treated as a review aid, not verification.${edits}`, "pass", "EXTRACT-REVIEW-01");
+        }
       }
       if (stageId === "documents") {
         const names = run.documents.map((document) => document.name.toLowerCase());
         const duplicates = names.some((name, index) => names.indexOf(name) !== index);
-        run.documents.forEach((document) => addFinding(run, "File", document.name, `${document.type} evidence · ${(document.size / 1024).toFixed(0)} KB · ${document.source}`, document.integrity === "valid" ? "pass" : "warning", "DOC-01", document.integrity === "valid" ? "" : `Provide a readable ${document.type} PDF smaller than 5 MB.`));
+        run.documents.forEach((document) => addFinding(run, "File", document.name, `${document.type} evidence · ${(document.size / 1024).toFixed(0)} KB · ${document.source}`, document.integrity === "valid" ? "pass" : "warning", "DOC-01", document.integrity === "valid" ? "" : `Provide an unlocked, complete ${document.type} PDF smaller than 5 MB.`));
+        const unreviewed = run.documents.filter((document) => !document.reviewed).map((document) => document.type);
+        if (unreviewed.length) addFinding(run, "File", "Reviewer document attestation is incomplete", `Not recorded as opened and reviewed: ${unreviewed.join(", ")}. Structural preflight does not replace human review.`, "warning", "DOC-REVIEW-01", "Open each supporting PDF and record the reviewer attestation.");
+        else addFinding(run, "File", "Reviewer opened all supporting PDFs", "Tax, bank and compliance evidence were explicitly attested as reviewed.", "pass", "DOC-REVIEW-01");
         if (duplicates) addFinding(run, "File", "Duplicate filename detected", "Two document categories use the same filename; confirm the correct files were supplied.", "warning", "DOC-02", "Upload distinct documents for each evidence category.");
         const expiry = new Date(`${input.taxExpiry}T23:59:59`);
         if (Number.isNaN(expiry.getTime()) || expiry < new Date()) addFinding(run, "Tax evidence", "Tax registration evidence is expired", `Submitted expiry: ${input.taxExpiry || "not supplied"}.`, "warning", "DOC-EXPIRY-01", "Provide current tax registration evidence.");
@@ -1064,7 +1380,7 @@
       }
       if (stageId === "identity") {
         const matches = normalizeName(input.legalName) === normalizeName(input.registeredName);
-        addFinding(run, "Identity", matches ? "Legal names align" : "Legal names differ", `${input.legalName} compared with ${input.registeredName}. Values are reviewer-confirmed; PDF content was not extracted.`, matches ? "pass" : "warning", "VND-IDENTITY-02", matches ? "" : "Provide a corrected registration or current name-change evidence.");
+        addFinding(run, "Identity", matches ? "Legal names align" : "Legal names differ", `${input.legalName} compared with ${input.registeredName}. Values are reviewer-confirmed${run.extraction ? "; selected values may originate from the cited PDF extraction" : "; no live PDF extraction was applied"}.`, matches ? "pass" : "warning", "VND-IDENTITY-02", matches ? "" : "Provide a corrected registration or current name-change evidence.");
       }
       if (stageId === "tax") {
         const rule = taxRules[input.country];
@@ -1163,32 +1479,43 @@
       processingOutput.hidden = false;
       decisionBrief.hidden = true;
       showRun(run);
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      for (const [id, label] of stageDefinitions.slice(0, -1)) {
-        document.querySelector("#run-state").textContent = label;
-        renderStages(run, id);
+      try {
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        for (const [id, label] of stageDefinitions.slice(0, -1)) {
+          document.querySelector("#run-state").textContent = label;
+          renderStages(run, id);
+          await new Promise((resolve) => setTimeout(resolve, reducedMotion ? 0 : 420));
+          const findingStart = run.findings.length;
+          executeStage(run, id);
+          const state = stageStateFor(run, findingStart);
+          run.stages.push({ id, label, state, completedAt: new Date().toISOString() });
+          run.currentStage = run.stages.length;
+          run.updatedAt = new Date().toISOString();
+          await saveRun(run);
+          renderStages(run);
+          renderFindings(run);
+        }
+        renderStages(run, "decision");
+        document.querySelector("#run-state").textContent = "Generating decision";
         await new Promise((resolve) => setTimeout(resolve, reducedMotion ? 0 : 420));
-        const findingStart = run.findings.length;
-        executeStage(run, id);
-        const state = stageStateFor(run, findingStart);
-        run.stages.push({ id, label, state, completedAt: new Date().toISOString() });
-        run.currentStage = run.stages.length;
+        run.decision = buildDecision(run);
+        run.stages.push({ id: "decision", label: "Generate decision", state: run.decision.status === "approved" ? "pass" : run.decision.status === "pending" ? "warning" : "fail", completedAt: new Date().toISOString() });
+        run.phase = "decision";
+        run.currentStage = stageDefinitions.length;
         run.updatedAt = new Date().toISOString();
         await saveRun(run);
-        renderStages(run);
+        processActive = false;
+        renderDecision(run);
+      } catch (error) {
+        processActive = false;
+        run.decision = null;
+        const persistenceFailure = error?.name === "PersistenceError";
+        document.querySelector("#run-state").textContent = persistenceFailure ? "Run not saved" : "Processing stopped";
+        document.querySelector("#run-updated").textContent = persistenceFailure ? "Browser storage is unavailable" : "An unexpected processing error occurred";
+        addFinding(run, persistenceFailure ? "Storage" : "Processing", persistenceFailure ? "This run could not be saved" : "The run stopped before a decision", persistenceFailure ? "Docket stopped before issuing a decision because browser-local storage failed. Free storage or allow site data, then start the submission again." : "Docket did not issue a decision because a processing step failed. Reload the page and rerun the submission.", "fail", persistenceFailure ? "STORAGE-01" : "PROCESS-01", persistenceFailure ? "Restore browser storage and rerun the submission." : "Reload and rerun the submission; escalate if the failure repeats.");
         renderFindings(run);
+        runOutput.focus();
       }
-      renderStages(run, "decision");
-      document.querySelector("#run-state").textContent = "Generating decision";
-      await new Promise((resolve) => setTimeout(resolve, reducedMotion ? 0 : 420));
-      run.decision = buildDecision(run);
-      run.stages.push({ id: "decision", label: "Generate decision", state: run.decision.status === "approved" ? "pass" : run.decision.status === "pending" ? "warning" : "fail", completedAt: new Date().toISOString() });
-      run.phase = "decision";
-      run.currentStage = stageDefinitions.length;
-      run.updatedAt = new Date().toISOString();
-      await saveRun(run);
-      processActive = false;
-      renderDecision(run);
     }
 
     function renderRecentRuns() {
@@ -1216,7 +1543,13 @@
       }
       formError.textContent = "";
       const run = createRun(values, documents);
-      await saveRun(run);
+      try {
+        await saveRun(run);
+      } catch {
+        formError.textContent = "This browser could not save the run. Free storage or allow site data, then try again.";
+        formError.focus();
+        return;
+      }
       history.pushState({ runId: run.id }, "", `vendor-onboarding.html?run=${encodeURIComponent(run.id)}`);
       await processRun(run);
     }
@@ -1230,6 +1563,9 @@
         control.removeAttribute("aria-describedby");
       });
       preparedDocuments = [];
+      clearExtraction();
+      document.querySelector("#extraction-consent").checked = false;
+      Object.values(documentReviewControls).forEach((control) => { control.checked = false; });
       document.querySelectorAll(".file-drop[data-valid]").forEach((drop) => delete drop.dataset.valid);
       packetStatus.textContent = "Packets populate editable inputs and document metadata; they never choose an outcome.";
       history.pushState({}, "", "vendor-onboarding.html");
@@ -1239,6 +1575,22 @@
     }
 
     loadPacketButton.addEventListener("click", loadPreparedPacket);
+    extractButton.addEventListener("click", extractDocuments);
+    document.querySelector("#apply-extraction").addEventListener("click", applyExtraction);
+    extractedFields.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-source-type]");
+      if (!button) return;
+      const file = fileInputs[button.dataset.sourceType]?.files[0];
+      if (!file) {
+        extractorStatus.textContent = "The cited local PDF is no longer available. Select the files and extract again.";
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      const opened = window.open(`${url}#page=${encodeURIComponent(button.dataset.sourcePage)}`, "_blank");
+      if (opened) opened.opener = null;
+      else extractorStatus.textContent = "The browser blocked the PDF preview. Allow pop-ups or open the selected PDF manually.";
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    });
     Object.entries(fileInputs).forEach(([type, input]) => input.addEventListener("change", () => showFileSelection(type)));
     document.querySelector("#packet-json").addEventListener("change", async (event) => {
       const file = event.target.files[0];
@@ -1256,6 +1608,7 @@
       formError.textContent = "";
       event.target.removeAttribute("aria-invalid");
       event.target.removeAttribute("aria-describedby");
+      if (extractionState?.applied && extractionFieldNames.includes(event.target.name)) extractionState.editedFields.add(event.target.name);
     });
     form.addEventListener("submit", startRun);
     document.querySelector("#new-submission").addEventListener("click", returnToIntake);

@@ -1,0 +1,8 @@
+{
+  "name": "docket-vendor-operations",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  }
+}
