@@ -628,6 +628,12 @@
       content: "…";
     }
 
+    .check[data-state="fail"]::before {
+      color: var(--paper);
+      background: var(--overdue-deep);
+      content: "×";
+    }
+
     .case-action {
       display: flex;
       flex-direction: column;
@@ -1033,7 +1039,7 @@
       <section class="workload-index" aria-labelledby="workload-title">
         <div class="index-head">
           <h2 class="index-title" id="workload-title">Workload index</h2>
-          <p class="index-scope">Live browser-local queue · select a count to filter the cases below.</p>
+          <p class="index-scope">12 permanent demo cases · browser-local submissions appear first.</p>
         </div>
 
         <div class="filter-axis">
@@ -1263,6 +1269,188 @@
         rule: "Legal-name abbreviations require a registration source that clearly establishes equivalence.",
         evidence: "The submitted abbreviation is not corroborated by the current tax form.",
         resolves: "Vendor supplies a corrected form or registration evidence."
+      },
+      {
+        id: "VEN-2026-052",
+        country: "United States",
+        vendor: "Atlas Medical Devices LLC",
+        state: "review",
+        stateLabel: "Needs review",
+        ownerLabel: "Demo state",
+        owner: "Read-only case",
+        urgency: "dueSoon",
+        urgencyValue: "36m",
+        urgencyLabel: "until overdue",
+        deadline: "26 Aug 2026 · 17:30 IST",
+        deadlineISO: "2026-08-26T17:30:00+05:30",
+        priority: 6,
+        exception: "Tax ID structure conflicts with country",
+        submitted: "Atlas Medical Devices LLC",
+        source: "EIN 941-72-8104",
+        compare: "?",
+        compareLabel: "format conflict",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "review"], ["Bank", "pass"], ["Screening", "pass"]],
+        action: "Inspect the tax-format exception",
+        rule: "A United States EIN must contain two digits, a hyphen, and seven digits.",
+        evidence: "The supplied identifier contains an extra digit and cannot pass the selected-country structure check.",
+        resolves: "Reviewer corrects the country or records a structurally valid EIN."
+      },
+      {
+        id: "VEN-2026-053",
+        country: "Singapore",
+        vendor: "Cobalt Marine Pte. Ltd.",
+        state: "ready",
+        stateLabel: "Decision ready",
+        ownerLabel: "Demo state",
+        owner: "Read-only case",
+        urgency: "later",
+        urgencyValue: "2h 11m",
+        urgencyLabel: "until overdue",
+        deadline: "26 Aug 2026 · 19:05 IST",
+        deadlineISO: "2026-08-26T19:05:00+05:30",
+        priority: 7,
+        exception: "Ownership evidence reviewed",
+        submitted: "Cobalt Marine Pte. Ltd.",
+        source: "Cobalt Treasury Pte. Ltd.",
+        compare: "≠",
+        compareLabel: "relationship proven",
+        match: true,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "pass"], ["Screening", "pass"]],
+        action: "Inspect the resolved evidence",
+        rule: "A related beneficiary may be accepted when current ownership and payment authority are both documented.",
+        evidence: "The group register and signed payment authority establish the beneficiary relationship.",
+        resolves: "Reviewer records approval or documents a remaining exception."
+      },
+      {
+        id: "VEN-2026-054",
+        country: "Germany",
+        vendor: "Rheinwerk Components GmbH",
+        state: "awaiting",
+        stateLabel: "Awaiting vendor",
+        ownerLabel: "Next actor",
+        owner: "Vendor · Lena Vogt",
+        urgency: "overdue",
+        urgencyValue: "1h 08m",
+        urgencyLabel: "overdue",
+        deadline: "26 Aug 2026 · 15:46 IST",
+        deadlineISO: "2026-08-26T15:46:00+05:30",
+        priority: 8,
+        exception: "Compliance declaration expired",
+        submitted: "Rheinwerk Components GmbH",
+        source: "Declaration expired 31 Jul 2026",
+        compare: "?",
+        compareLabel: "renewal required",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "pass"], ["Screening", "waiting"]],
+        action: "Await a current compliance declaration",
+        rule: "Compliance declarations must remain valid on the date the vendor is activated.",
+        evidence: "The submitted declaration expired before this review was opened.",
+        resolves: "Vendor supplies a signed, current compliance declaration."
+      },
+      {
+        id: "VEN-2026-055",
+        country: "United States",
+        vendor: "Redwood Export Partners Inc.",
+        state: "rejected",
+        stateLabel: "Rejected",
+        ownerLabel: "Recorded by",
+        owner: "Mira Sen",
+        urgency: "later",
+        urgencyValue: "—",
+        urgencyLabel: "case closed locally",
+        deadline: "No active SLA",
+        deadlineISO: "",
+        priority: 9,
+        exception: "Restricted-party screening confirmed",
+        submitted: "Redwood Export Partners Inc.",
+        source: "Confirmed compliance match",
+        compare: "≠",
+        compareLabel: "policy blocked",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "pass"], ["Screening", "fail"]],
+        action: "Keep vendor activation blocked",
+        rule: "A confirmed restricted-party match blocks activation and requires a recorded rejection.",
+        evidence: "Compliance review confirmed the matched entity after secondary verification.",
+        resolves: "Only a documented false-positive determination can reopen the case."
+      },
+      {
+        id: "VEN-2026-056",
+        country: "India",
+        vendor: "Saffron Grid Technologies Pvt Ltd",
+        state: "approved",
+        stateLabel: "Approved",
+        ownerLabel: "Recorded by",
+        owner: "Asha Rao",
+        urgency: "later",
+        urgencyValue: "—",
+        urgencyLabel: "case closed locally",
+        deadline: "No active SLA",
+        deadlineISO: "",
+        priority: 10,
+        exception: "All onboarding checks passed",
+        submitted: "Saffron Grid Technologies Pvt Ltd",
+        source: "Saffron Grid Technologies Pvt Ltd",
+        compare: "=",
+        compareLabel: "matches",
+        match: true,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "pass"], ["Screening", "pass"]],
+        action: "Vendor may be activated",
+        rule: "Approval requires resolved identity, tax, bank and screening checks, plus acceptable supporting-file integrity.",
+        evidence: "Names align, the tax format is valid, screening is clear, and all three supporting PDFs passed header and size checks.",
+        resolves: "The approved record remains available for audit."
+      },
+      {
+        id: "VEN-2026-057",
+        country: "India",
+        vendor: "Kaveri Packaging Solutions LLP",
+        state: "review",
+        stateLabel: "Needs review",
+        ownerLabel: "Demo state",
+        owner: "Read-only case",
+        urgency: "dueSoon",
+        urgencyValue: "53m",
+        urgencyLabel: "until overdue",
+        deadline: "26 Aug 2026 · 17:47 IST",
+        deadlineISO: "2026-08-26T17:47:00+05:30",
+        priority: 11,
+        exception: "Bank account appears on another vendor",
+        submitted: "Kaveri Packaging Solutions LLP",
+        source: "Account ending 4421 · existing vendor",
+        compare: "?",
+        compareLabel: "duplicate signal",
+        match: false,
+        checks: [["Identity", "pass"], ["Tax", "pass"], ["Bank", "review"], ["Screening", "pass"]],
+        action: "Inspect the duplicate-account signal",
+        rule: "A bank account already used by another vendor requires ownership and payment-authority review.",
+        evidence: "Duplicate detection linked the submitted account to an active supplier record.",
+        resolves: "Reviewer confirms a legitimate group relationship or obtains replacement bank details."
+      },
+      {
+        id: "VEN-2026-058",
+        country: "Singapore",
+        vendor: "Juniper Cloud Services Pte. Ltd.",
+        state: "awaiting",
+        stateLabel: "Awaiting vendor",
+        ownerLabel: "Next actor",
+        owner: "Vendor · Isaac Tan",
+        urgency: "later",
+        urgencyValue: "6h 01m",
+        urgencyLabel: "until overdue",
+        deadline: "26 Aug 2026 · 22:55 IST",
+        deadlineISO: "2026-08-26T22:55:00+05:30",
+        priority: 12,
+        exception: "Beneficial-owner record incomplete",
+        submitted: "Juniper Cloud Services Pte. Ltd.",
+        source: "Ownership schedule · 82% disclosed",
+        compare: "?",
+        compareLabel: "18% unexplained",
+        match: false,
+        checks: [["Identity", "waiting"], ["Tax", "pass"], ["Bank", "pass"], ["Screening", "waiting"]],
+        action: "Await complete ownership schedule",
+        rule: "The submission must account for the complete beneficial-ownership chain before screening can finish.",
+        evidence: "The uploaded schedule identifies owners for 82% of the company.",
+        resolves: "Vendor discloses the remaining ownership interests and supporting records."
       }
     ];
 
@@ -1439,7 +1627,7 @@
     }
 
     function checkMarkup([label, state]) {
-      const stateText = state === "pass" ? "passed" : state === "review" ? "human review" : "awaiting evidence";
+      const stateText = state === "pass" ? "passed" : state === "review" ? "human review" : state === "fail" ? "failed" : "awaiting evidence";
       return `<span class="check" role="listitem" data-state="${state}"><span>${label}<span class="sr-only">: ${stateText}</span></span></span>`;
     }
 
